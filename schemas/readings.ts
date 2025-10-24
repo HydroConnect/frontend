@@ -16,5 +16,14 @@ const readingsSample: iReadings = {
     timestamp: "2025-10-21T01:23:54.533+00:00",
 };
 
-export { readingsSample };
+const readingsHeader: (keyof iReadings)[] = [
+    "turbidity",
+    "pH",
+    "tds",
+    "temperature",
+    "percent",
+    "timestamp",
+];
+
+export { readingsSample, readingsHeader };
 export type { iReadings };

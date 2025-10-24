@@ -1,7 +1,10 @@
+import { downloadReports, resumeDownload } from "@/lib/downloadReports";
 import { connectAndListen, disconnect, isConnected } from "@/lib/io";
 import { getSummaries } from "@/lib/rest";
+import { downloadRequestSample } from "@/schemas/downloadRequest";
 import type { iReadings } from "@/schemas/readings";
 import { type iSummaries } from "@/schemas/summaries";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Link } from "expo-router";
 import { useState } from "react";
 import { Button, FlatList, Text, View } from "react-native";
@@ -70,6 +73,27 @@ const ApiTest = () => {
                         title="Check connection"
                         onPress={() => {
                             print(isConnected());
+                        }}
+                    />
+                </View>
+                <View className="h-56 w-max bg-slate-300">
+                    <Button
+                        title="IO /download-request"
+                        onPress={() => {
+                            downloadReports(downloadRequestSample);
+                        }}
+                    />
+                    <Button
+                        title="IO /resume-request"
+                        onPress={() => {
+                            resumeDownload();
+                        }}
+                    />
+                    <Button
+                        title="IO /reset"
+                        onPress={async () => {
+                            await AsyncStorage.clear();
+                            console.log("RESET!");
                         }}
                     />
                 </View>
