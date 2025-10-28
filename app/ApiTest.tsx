@@ -1,5 +1,4 @@
 import { downloadReports, resumeDownload } from "@/lib/downloadReports";
-import { errorHandler, IOError } from "@/lib/errorHandler";
 import { connectAndListen, disconnect, isConnected } from "@/lib/io";
 import { getSummaries } from "@/lib/rest";
 import { downloadRequestSample } from "@/schemas/downloadRequest";
