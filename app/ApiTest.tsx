@@ -1,4 +1,5 @@
 import { downloadReports, resumeDownload } from "@/lib/downloadReports";
+import { errorHandler, IOError } from "@/lib/errorHandler";
 import { connectAndListen, disconnect, isConnected } from "@/lib/io";
 import { getSummaries } from "@/lib/rest";
 import { downloadRequestSample } from "@/schemas/downloadRequest";
@@ -55,6 +56,9 @@ const ApiTest = () => {
                         onPress={() => {
                             connectAndListen(
                                 () => {
+                                    console.log("Connected");
+                                },
+                                () => {
                                     console.log("Connection lost!");
                                 },
                                 (readings: iReadings) => {
@@ -79,14 +83,29 @@ const ApiTest = () => {
                 <View className="h-56 w-max bg-slate-300">
                     <Button
                         title="IO /download-request"
-                        onPress={() => {
-                            downloadReports(downloadRequestSample);
+                        onPress={async () => {
+                            const hasil = await downloadReports(downloadRequestSample);
+                            if (hasil instanceof Error) {
+                                console.log(hasil);
+                            }
                         }}
                     />
                     <Button
                         title="IO /resume-request"
-                        onPress={() => {
-                            resumeDownload();
+                        onPress={async () => {
+                            const hasil = await resumeDownload();
+                            if (hasil instanceof Error) {
+                                console.log(hasil);
+                            }
+                        }}
+                    />
+                    <Button
+                        title="IO /resume-request (_forcePick)"
+                        onPress={async () => {
+                            const hasil = await resumeDownload(true);
+                            if (hasil instanceof Error) {
+                                console.log(hasil);
+                            }
                         }}
                     />
                     <Button

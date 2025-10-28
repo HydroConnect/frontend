@@ -4,6 +4,13 @@ import { readingsHeader, type iReadings } from "@/schemas/readings";
 import * as fs from "expo-file-system";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { iDownloadProgress } from "@/schemas/downloadProgress";
+import {
+    DownloadError,
+    DownloadErrorEnum,
+    errorHandler,
+    IOError,
+    IOErrorEnum,
+} from "./errorHandler";
 
 function encode(str: string): Uint8Array {
     return new TextEncoder().encode(str);
@@ -35,103 +42,127 @@ function synthesizeFilename(downloadId: string, nonce: number = 0) {
 
 export async function downloadReports(
     downloadRequest: iDownloadRequest,
-    _resume: boolean = false
-): Promise<null | string> {
+    _resume: boolean = false,
+    _forcePick: boolean = false
+): Promise<undefined | Error> {
     if (!isConnected()) {
-        // TODO: Make this a throw
-        console.log("Socket not Connected!");
-        return null;
+        return new IOError(IOErrorEnum.NotConnected);
     }
     const _progress = await AsyncStorage.getItem("download-progress");
     let progress: null | iDownloadProgress = _progress === null ? null : JSON.parse(_progress!);
 
     if (progress !== null && !_resume) {
-        console.log("There are unfinished job with id: " + progress.downloadId);
-        return progress.downloadId;
+        return new DownloadError(DownloadErrorEnum.UnfinishedDownload, {
+            downloadId: progress.downloadId,
+        });
     }
 
     console.log("Starting Download!");
-    const outDir = await fs.Directory.pickDirectoryAsync(
-        progress !== null ? progress.dirUri : undefined
-    );
+
+    let dirUri = "";
     if (progress === null) {
+        try {
+            dirUri = (await fs.Directory.pickDirectoryAsync())!.uri;
+        } catch {
+            return new DownloadError(DownloadErrorEnum.CancelPicking);
+        }
+
         progress = {
             downloadId: downloadRequest.downloadId,
             to: downloadRequest.to,
             nonce: 0,
             lastWritten: new Date(new Date(downloadRequest.from).getTime() - 1).toISOString(),
-            dirUri: outDir.uri,
+            dirUri: dirUri,
         };
-    } else {
-        if (outDir.uri !== progress.dirUri) {
-            console.log(
-                "Please select the same directory as your previous downloads!\n",
-                progress.dirUri
-            );
+    } else if (_forcePick) {
+        try {
+            dirUri = (await fs.Directory.pickDirectoryAsync(progress.dirUri))!.uri;
+        } catch {
+            return new DownloadError(DownloadErrorEnum.CancelPicking);
         }
-    }
 
-    const outFile = new fs.File(
-        outDir.uri,
-        synthesizeFilename(downloadRequest.downloadId, progress.nonce + 1)
-    );
-    outFile.create({ overwrite: true });
-    const wStream = outFile.writableStream();
+        if (dirUri !== progress.dirUri) {
+            return new DownloadError(DownloadErrorEnum.NoPermission, { path: progress.dirUri });
+        }
+    } else {
+        dirUri = progress.dirUri;
+    }
+    let outFile, wStream;
+    try {
+        outFile = new fs.File(
+            dirUri,
+            synthesizeFilename(downloadRequest.downloadId, progress.nonce + 1)
+        );
+        outFile.create({ overwrite: true });
+        wStream = outFile.writableStream();
+    } catch {
+        return new DownloadError(DownloadErrorEnum.NoPermission, { path: progress.dirUri });
+    }
     const writer = wStream.getWriter();
     if (progress.nonce === 0) {
         writer.write(encode(readingsHeader.join(";") + "\n"));
     }
     setIsDownloading(true);
-    _startDownload(
+    return _startDownload(
         downloadRequest,
         async (readings: iReadings[]) => {
             await writer.write(formatReadings(readings));
             const lastWritten = readings[readings.length - 1]!.timestamp;
             progress!.lastWritten = lastWritten;
+
             console.log(lastWritten);
+
             await AsyncStorage.setItem("download-progress", JSON.stringify(progress));
         },
         async (downloadId: string) => {
             console.log("Download for " + downloadId + " is finished!");
+
             await writer.close();
             await AsyncStorage.removeItem("download-progress");
-            await mergeDownloads(progress, outDir.uri);
+            const resp = await mergeDownloads(progress, dirUri);
+            if (resp !== undefined) {
+                errorHandler(resp);
+                return;
+            }
             setIsDownloading(false);
         }
     );
-
-    return null;
 }
 
-export async function resumeDownload() {
+export async function resumeDownload(_forcePick: boolean = false): Promise<undefined | Error> {
     if (!isConnected()) {
-        // TODO: Make this a throw
-        console.log("Socket is not connected!");
-        return;
+        return new IOError(IOErrorEnum.NotConnected);
     }
     if (getIsDownloading() === true) {
-        console.log("Is still downloading!");
-        return;
+        return new DownloadError(DownloadErrorEnum.DownloadInProgress);
     }
     const _progress = await AsyncStorage.getItem("download-progress");
     if (_progress === null) {
-        console.log("No Downloads to Resume!");
-        return;
+        return new DownloadError(DownloadErrorEnum.NoUnfinishedDownload);
     }
     const progress: iDownloadProgress = JSON.parse(_progress!);
     progress.nonce++;
     await AsyncStorage.setItem("download-progress", JSON.stringify(progress));
-    downloadReports(
+    const resp = await downloadReports(
         {
             to: progress.to,
             from: new Date(new Date(progress.lastWritten).getTime() + 1).toISOString(),
             downloadId: progress.downloadId,
         },
-        true
+        true,
+        _forcePick
     );
+    if (resp !== undefined) {
+        progress.nonce--;
+        await AsyncStorage.setItem("download-progress", JSON.stringify(progress));
+        errorHandler(resp);
+    }
 }
 
-async function mergeDownloads(progress: iDownloadProgress, outDirUri: string) {
+async function mergeDownloads(
+    progress: iDownloadProgress,
+    outDirUri: string
+): Promise<undefined | Error> {
     const outFile = new fs.File(outDirUri, synthesizeFilename(progress.downloadId, 0));
     outFile.create({ overwrite: true });
     const wStream = outFile.writableStream();
@@ -139,10 +170,10 @@ async function mergeDownloads(progress: iDownloadProgress, outDirUri: string) {
 
     // Merge loop
     for (let i = 0; i <= progress.nonce; i++) {
-        const nowFile = new fs.File(outDirUri, synthesizeFilename(progress.downloadId, i + 1));
-        const rStream = nowFile.readableStream();
-        const reader = rStream.getReader();
         try {
+            const nowFile = new fs.File(outDirUri, synthesizeFilename(progress.downloadId, i + 1));
+            const rStream = nowFile.readableStream();
+            const reader = rStream.getReader();
             while (true) {
                 const { value, done } = await reader.read();
                 if (done) {
@@ -151,8 +182,10 @@ async function mergeDownloads(progress: iDownloadProgress, outDirUri: string) {
                 await writer.write(value);
             }
             await reader.cancel();
-        } catch (err) {
-            console.log("Error in merging!\n--------\n\n", err);
+        } catch {
+            return new DownloadError(DownloadErrorEnum.NotFound, {
+                path: `${outDirUri}/${synthesizeFilename(progress.downloadId, i + 1)}`,
+            });
         }
     }
 
@@ -160,11 +193,14 @@ async function mergeDownloads(progress: iDownloadProgress, outDirUri: string) {
     for (let i = 0; i <= progress.nonce; i++) {
         try {
             new fs.File(outDirUri, synthesizeFilename(progress.downloadId, i + 1)).delete();
-        } catch (err) {
-            console.log("Error in deleting!\n--------\n\n", err);
+        } catch {
+            return new DownloadError(DownloadErrorEnum.NotFound, {
+                path: `${outDirUri}/${synthesizeFilename(progress.downloadId, i + 1)}`,
+            });
         }
     }
 
     await writer.close();
+
     console.log("Finish Merging!");
 }

@@ -2,6 +2,7 @@ import { io, Socket } from "socket.io-client";
 import { BACKEND_API_BASE_URL, BACKEND_API_IO_VERSION } from "./constants";
 import type { iReadings } from "@/schemas/readings";
 import type { iDownloadRequest } from "@/schemas/downloadRequest";
+import { IOError, IOErrorEnum } from "./errorHandler";
 
 let socket: Socket | undefined = undefined;
 let isDownloading = false;
@@ -12,9 +13,17 @@ export function getIsDownloading() {
 export function setIsDownloading(input: boolean) {
     isDownloading = input;
 }
-
 export function isConnected(): boolean {
     return socket !== undefined;
+}
+
+function handleLostConnection(disconnectHandler: () => void) {
+    if (!socket!.active) {
+        socket!.disconnect();
+        setIsDownloading(false);
+        socket = undefined;
+        disconnectHandler();
+    }
 }
 
 /**
@@ -23,39 +32,24 @@ export function isConnected(): boolean {
  * @param readingsHandler Is suggested to update the UI of the element
  */
 export function connectAndListen(
+    connectHandler: () => void,
     disconnectHandler: () => void,
     readingsHandler: (readings: iReadings) => void
 ) {
     console.log("Connecting!");
+
     socket = io(`${BACKEND_API_BASE_URL}/io/${BACKEND_API_IO_VERSION}`);
     socket!.on("connect", () => {
-        console.log("Connected!");
+        connectHandler();
     });
     socket!.on("disconnect", () => {
-        if (!socket!.active) {
-            socket!.disconnect();
-            setIsDownloading(false);
-            socket = undefined;
-            disconnectHandler();
-        }
+        handleLostConnection(disconnectHandler);
     });
     socket!.on("connect_error", () => {
-        if (!socket!.active) {
-            socket!.disconnect();
-            setIsDownloading(false);
-            socket = undefined;
-            disconnectHandler();
-        }
+        handleLostConnection(disconnectHandler);
     });
     socket!.on("readings", (readings: iReadings) => {
         readingsHandler(readings);
-    });
-    socket.on("download-data", (readings, ack) => {
-        console.log(...readings);
-        ack();
-    });
-    socket.on("download-finish", (downloadId) => {
-        console.log("Download for " + downloadId + " has finished!");
     });
 }
 
@@ -63,11 +57,10 @@ export function _startDownload(
     downloadRequest: iDownloadRequest,
     downloadHandler: (readings: iReadings[], downloadId: string) => void | Promise<void>,
     finishHandler: (downloadId: string) => void | Promise<void>
-) {
+): undefined | Error {
     if (socket === undefined) {
         setIsDownloading(false);
-        console.log("Socket is not connected!");
-        return;
+        return new IOError(IOErrorEnum.NotConnected);
     }
 
     socket!.off("download-data");
@@ -89,10 +82,9 @@ export function _startDownload(
     socket!.emit("download-request", downloadRequest);
 }
 
-export function disconnect() {
+export function disconnect(): undefined | Error {
     if (socket === undefined) {
-        console.log("Socket is not connected!");
-        return;
+        return new IOError(IOErrorEnum.NotConnected);
     }
     socket!.disconnect();
     socket = undefined;
