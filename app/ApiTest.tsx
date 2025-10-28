@@ -1,5 +1,5 @@
 import { downloadReports, resumeDownload } from "@/lib/downloadReports";
-import { connectAndListen, disconnect, isConnected } from "@/lib/io";
+import { connectAndListen, disconnect, isConnected, setIsDownloading } from "@/lib/io";
 import { getSummaries } from "@/lib/rest";
 import { downloadRequestSample } from "@/schemas/downloadRequest";
 import type { iReadings } from "@/schemas/readings";
@@ -31,6 +31,7 @@ const ApiTest = () => {
                     <Button
                         title="GET /summary"
                         onPress={() => {
+                            setIsDownloading(false);
                             getSummaries().then((data) => {
                                 if (data === null) {
                                     print("Error getting data!");

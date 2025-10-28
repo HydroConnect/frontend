@@ -118,13 +118,13 @@ export async function downloadReports(
             console.log("Download for " + downloadId + " is finished!");
 
             await writer.close();
-            await AsyncStorage.removeItem("download-progress");
+            setIsDownloading(false);
             const resp = await mergeDownloads(progress, dirUri);
             if (resp !== undefined) {
                 errorHandler(resp);
                 return;
             }
-            setIsDownloading(false);
+            await AsyncStorage.removeItem("download-progress");
         }
     );
 }
