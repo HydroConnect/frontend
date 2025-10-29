@@ -43,7 +43,8 @@ function synthesizeFilename(downloadId: string, nonce: number = 0) {
 export async function downloadReports(
     downloadRequest: iDownloadRequest,
     _resume: boolean = false,
-    _forcePick: boolean = false
+    _forcePick: boolean = false,
+    mergeFailHandler: (err: Error) => void = errorHandler
 ): Promise<undefined | Error> {
     if (!isConnected()) {
         return new IOError(IOErrorEnum.NotConnected);
@@ -121,7 +122,7 @@ export async function downloadReports(
             setIsDownloading(false);
             const resp = await mergeDownloads(progress, dirUri);
             if (resp !== undefined) {
-                errorHandler(resp);
+                mergeFailHandler(resp);
                 return;
             }
             await AsyncStorage.removeItem("download-progress");
@@ -129,7 +130,7 @@ export async function downloadReports(
     );
 }
 
-export async function resumeDownload(_forcePick: boolean = false): Promise<undefined | Error> {
+export async function resumeDownload(_forcePick: boolean = false, mergeFailHandler: (err: Error) => void = errorHandler): Promise<undefined | Error> {
     if (!isConnected()) {
         return new IOError(IOErrorEnum.NotConnected);
     }
@@ -150,12 +151,13 @@ export async function resumeDownload(_forcePick: boolean = false): Promise<undef
             downloadId: progress.downloadId,
         },
         true,
-        _forcePick
+        _forcePick,
+        mergeFailHandler
     );
     if (resp !== undefined) {
         progress.nonce--;
         await AsyncStorage.setItem("download-progress", JSON.stringify(progress));
-        errorHandler(resp);
+        return resp;
     }
 }
 
