@@ -1,7 +1,10 @@
+import { MAX_DOWNLOAD_ID_LENGTH } from "./constants";
+
 export enum IOErrorEnum {
     NotConnected,
 }
 export enum DownloadErrorEnum {
+    InvalidName,
     CancelPicking,
     NotFound,
     NoPermission,
@@ -49,6 +52,9 @@ export class DownloadError extends Error {
     constructor(type: DownloadErrorEnum, metadata?: any) {
         let message = "";
         switch (type) {
+            case DownloadErrorEnum.InvalidName:
+                message = "Supplied name is invalid (max_length " + MAX_DOWNLOAD_ID_LENGTH + ")";
+                break;
             case DownloadErrorEnum.CancelPicking:
                 message = "User has canceled";
                 break;

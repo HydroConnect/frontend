@@ -11,6 +11,7 @@ import {
     IOError,
     IOErrorEnum,
 } from "./errorHandler";
+import { MAX_DOWNLOAD_ID_LENGTH } from "./constants";
 
 function encode(str: string): Uint8Array {
     return new TextEncoder().encode(str);
@@ -45,7 +46,7 @@ function synthesizeFilename(downloadId: string, nonce: number = 0) {
  * @param downloadRequest DownloadRequest data
  * @param {boolean} _resume Resume the unfinished download (Should not be set by FE)
  * @param {boolean} _forcePick Force the file picker to open (Should not be set by FE)
- * @param mergeFailHandler Handler when merge fails 
+ * @param mergeFailHandler Handler when merge fails
  * @returns {Promise<undefined | Error>}
  */
 export async function downloadReports(
@@ -54,6 +55,9 @@ export async function downloadReports(
     _forcePick: boolean = false,
     mergeFailHandler: (err: Error) => void = errorHandler
 ): Promise<undefined | Error> {
+    if (downloadRequest.downloadId.length > MAX_DOWNLOAD_ID_LENGTH) {
+        return new DownloadError(DownloadErrorEnum.InvalidName);
+    }
     if (!isConnected()) {
         return new IOError(IOErrorEnum.NotConnected);
     }
@@ -140,11 +144,14 @@ export async function downloadReports(
 
 /**
  * @description Resume unfinished downlaods, throw if there isn't any
- * @param {boolean} _forcePick Force to open file picker (should be supplied IFF permission error) 
+ * @param {boolean} _forcePick Force to open file picker (should be supplied IFF permission error)
  * @param mergeFailHandler Passed to downloadReports (defailt to be errorHandler)
  * @returns {Promise<Error | undefined>}
  */
-export async function resumeDownload(_forcePick: boolean = false, mergeFailHandler: (err: Error) => void = errorHandler): Promise<undefined | Error> {
+export async function resumeDownload(
+    _forcePick: boolean = false,
+    mergeFailHandler: (err: Error) => void = errorHandler
+): Promise<undefined | Error> {
     if (!isConnected()) {
         return new IOError(IOErrorEnum.NotConnected);
     }
