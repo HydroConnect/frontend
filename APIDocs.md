@@ -50,6 +50,7 @@ interface iDownloadRequest {
     from: string;
     to: string;
     downloadId: string;
+    // Length must be less than MAX_DOWNLOAD_ID_LENGTH
 }
 
 const downloadRequestSample = {
@@ -113,6 +114,8 @@ const summariesSample: iSummaries = {
 export const BACKEND_API_BASE_URL = "http://192.168.1.6:3000"; // Change to server IP on development
 export const BACKEND_API_REST_VERSION = "v1";
 export const BACKEND_API_IO_VERSION = "v1";
+export const MAX_DOWNLOAD_ID_LENGTH = 10;
+// SYNC WITH BE!
 ```
 
 ---
@@ -309,6 +312,7 @@ Used for **HTTP/REST** related errors.
 DownloadError(type: DownloadErrorEnum)
 
 enum DownloadErrorEnum {
+    InvalidName,
     CancelPicking,
     NotFound,
     NoPermission,
@@ -340,7 +344,8 @@ function errorHandler(error: Error);
 This test case must be checked when implementing new feature
 Downloads Error test case:
 
-- Invalid name (name > ALLOWED_LENGTH)
+```
+- Invalid name (name > MAX_DOWNLOAD_ID_LENGTH)
 - Socket not connected
 - User disconnect midway
 - User close the app and re-open
@@ -349,7 +354,10 @@ Downloads Error test case:
 - User try to download but already downloading
 - User try to download but there are unfinished downloads
 - User try to resume but there are no unfinished downloads
+```
 
 Http Test Case:
 
+```
 - Server Down
+```
