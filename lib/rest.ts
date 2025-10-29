@@ -2,7 +2,11 @@ import { type iSummaries } from "@/schemas/summaries";
 import { BACKEND_API_BASE_URL, BACKEND_API_REST_VERSION } from "./constants";
 import { errorHandler, HttpError } from "./errorHandler";
 
-export async function getSummaries(): Promise<iSummaries[] | null> {
+/**
+ * @description Get last 7 days summaries
+ * @returns {Promise<iSummaries[] | Error>}
+ */
+export async function getSummaries(): Promise<iSummaries[] | Error> {
     try {
         const result = await fetch(
             `${BACKEND_API_BASE_URL}/rest/${BACKEND_API_REST_VERSION}/summary`
@@ -13,8 +17,6 @@ export async function getSummaries(): Promise<iSummaries[] | null> {
         const json = await result.json();
         return json;
     } catch {
-        errorHandler(new HttpError(500));
+        return new HttpError(500);
     }
-
-    return null;
 }
