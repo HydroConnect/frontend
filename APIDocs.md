@@ -203,15 +203,17 @@ export function _startDownload(
 
 ```ts
 /**
- * @description Connect to socket.io and listen to readings
- * @param connectHandler Updates UI on connection
- * @param disconnectHandler Handles UI changes and reconnection
- * @param readingsHandler Updates UI with IoT data
+ * @description Connect to socket.io and listen readings
+ * @param connectHandler Is suggested to change UI Connection status
+ * @param disconnectHandler Is suggested to handle changes in UI and to call connectAndListen() again
+ * @param readingsHandler Is suggested to update the UI of the IoT data element
+ * @param IOErrorHandler Is suggested to use default ErrorHandler (when receives error event)
  */
 export function connectAndListen(
     connectHandler: () => void,
     disconnectHandler: () => void,
-    readingsHandler: (readings: iReadings) => void
+    readingsHandler: (readings: iReadings) => void,
+    IOErrorHandler: (err: Error) => void = errorHandler
 );
 ```
 
