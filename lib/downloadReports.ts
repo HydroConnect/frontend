@@ -40,6 +40,14 @@ function synthesizeFilename(downloadId: string, nonce: number = 0) {
     return `reports-${downloadId}-${nonce}.csv`;
 }
 
+/**
+ * @description Download Reports
+ * @param downloadRequest DownloadRequest data
+ * @param {boolean} _resume Resume the unfinished download (Should not be set by FE)
+ * @param {boolean} _forcePick Force the file picker to open (Should not be set by FE)
+ * @param mergeFailHandler Handler when merge fails 
+ * @returns {Promise<undefined | Error>}
+ */
 export async function downloadReports(
     downloadRequest: iDownloadRequest,
     _resume: boolean = false,
@@ -130,6 +138,12 @@ export async function downloadReports(
     );
 }
 
+/**
+ * @description Resume unfinished downlaods, throw if there isn't any
+ * @param {boolean} _forcePick Force to open file picker (should be supplied IFF permission error) 
+ * @param mergeFailHandler Passed to downloadReports (defailt to be errorHandler)
+ * @returns {Promise<Error | undefined>}
+ */
 export async function resumeDownload(_forcePick: boolean = false, mergeFailHandler: (err: Error) => void = errorHandler): Promise<undefined | Error> {
     if (!isConnected()) {
         return new IOError(IOErrorEnum.NotConnected);
