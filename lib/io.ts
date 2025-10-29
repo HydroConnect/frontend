@@ -2,7 +2,8 @@ import { io, Socket } from "socket.io-client";
 import { BACKEND_API_BASE_URL, BACKEND_API_IO_VERSION } from "./constants";
 import type { iReadings } from "@/schemas/readings";
 import type { iDownloadRequest } from "@/schemas/downloadRequest";
-import { IOError, IOErrorEnum } from "./errorHandler";
+import { errorHandler, IOError, IOErrorEnum } from "./errorHandler";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 let socket: Socket | undefined = undefined;
 let isDownloading = false;
@@ -16,7 +17,7 @@ export function getIsDownloading() {
 }
 /**
  * @description Change downloading status (should never be called in FE)
- * @param {boolean} input 
+ * @param {boolean} input
  */
 export function setIsDownloading(input: boolean) {
     isDownloading = input;
@@ -38,16 +39,23 @@ function handleLostConnection(disconnectHandler: () => void) {
     }
 }
 
+async function resetDownloadState() {
+    await AsyncStorage.removeItem("download-progress");
+    setIsDownloading(false);
+}
+
 /**
- * @description Connect to socke.io and listen readings
+ * @description Connect to socket.io and listen readings
  * @param connectHandler Is suggested to change UI Connection status
  * @param disconnectHandler Is suggested to handle changes in UI and to call connectAndListen() again
  * @param readingsHandler Is suggested to update the UI of the IoT data element
+ * @param IOErrorHandler Is suggested to use default ErrorHandler (when receives error event)
  */
 export function connectAndListen(
     connectHandler: () => void,
     disconnectHandler: () => void,
-    readingsHandler: (readings: iReadings) => void
+    readingsHandler: (readings: iReadings) => void,
+    IOErrorHandler: (err: Error) => void = errorHandler
 ) {
     console.log("Connecting!");
 
@@ -61,6 +69,9 @@ export function connectAndListen(
     socket!.on("connect_error", () => {
         handleLostConnection(disconnectHandler);
     });
+    socket!.on("error", (err: Error) => {
+        IOErrorHandler(err);
+    });
     socket!.on("readings", (readings: iReadings) => {
         readingsHandler(readings);
     });
@@ -68,9 +79,9 @@ export function connectAndListen(
 
 /**
  * @description Start backend process for download (should never be called by FE)
- * @param downloadRequest 
- * @param downloadHandler 
- * @param finishHandler 
+ * @param downloadRequest
+ * @param downloadHandler
+ * @param finishHandler
  * @returns {undefined | Error} Undefined if success Error if there are error
  */
 export function _startDownload(
@@ -86,6 +97,11 @@ export function _startDownload(
     socket!.off("download-data");
     socket!.off("download-finish");
 
+    socket!.on("error", async (err: Error) => {
+        if (err.name === "IOError") {
+            await resetDownloadState();
+        }
+    });
     socket!.on("download-data", (readings: iReadings[], downloadId: string, ack: () => void) => {
         if (downloadId !== downloadRequest.downloadId) {
             return;
