@@ -332,3 +332,24 @@ Used for **Download-related** errors.
  */
 function errorHandler(error: Error);
 ```
+
+---
+
+### Test Case
+
+This test case must be checked when implementing new feature
+Downloads Error test case:
+
+- Invalid name (name > ALLOWED_LENGTH)
+- Socket not connected
+- User disconnect midway
+- User close the app and re-open
+- User close the app and re-open but different directory (PermissionError)
+- User close the app and re-open but rename file / file is missing (MergeError)
+- User try to download but already downloading
+- User try to download but there are unfinished downloads
+- User try to resume but there are no unfinished downloads
+
+Http Test Case:
+
+- Server Down
