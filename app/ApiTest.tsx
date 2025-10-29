@@ -37,6 +37,11 @@ const ApiTest = () => {
                                     print("Error getting data!");
                                     return;
                                 }
+                                // handle Error return type from getSummaries
+                                if (data instanceof Error) {
+                                    print(data);
+                                    return;
+                                }
                                 // print(data);
                                 setSummary(data);
                             });
