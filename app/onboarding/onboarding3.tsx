@@ -5,7 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 const Onboarding3 = () => {
     return (
-        <SafeAreaView style={{ flex: 1 }}>
+        <SafeAreaView className="flex-1 bg-black" edges={["bottom"]}>
             <StatusBar backgroundColor="white" style="dark" />
             <OnboardingScreen3 />
         </SafeAreaView>

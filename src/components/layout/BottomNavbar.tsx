@@ -2,7 +2,6 @@ import { Ionicons } from "@expo/vector-icons";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import React from "react";
 import { TouchableOpacity, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Typography } from "../Typography";
 
 const getIconName = (routeName: string, isFocused: boolean): keyof typeof Ionicons.glyphMap => {
@@ -17,16 +16,13 @@ const getIconName = (routeName: string, isFocused: boolean): keyof typeof Ionico
 };
 
 export function BottomNavbar({ state, descriptors, navigation }: BottomTabBarProps) {
-    const { bottom } = useSafeAreaInsets();
-
     return (
         <View
             // 4. ⚠️ UBAH: Kasih background sesuai referensi (green-50 dari config-mu)
             className="flex-row bg-green-50"
             style={{
-                // Tambahkan padding atas, dan padding bawah + safe area
-                paddingBottom: bottom + 8,
-                paddingTop: 12,
+                // Padding atas dan bawah (tanpa safe area karena sudah di-handle SafeAreaView)
+                paddingVertical: 12,
             }}>
             {state.routes.map((route, index) => {
                 const descriptor = descriptors[route.key];

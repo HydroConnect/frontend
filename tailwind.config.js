@@ -10,16 +10,16 @@ module.exports = {
                 "sans-semibold": ["SourceSansPro-Semibold"],
             },
             fontSize: {
-                d1: ["57px", "64px"], // Display/D1
-                d2: ["45px", "52px"], // Display/D2
-                h1: ["32px", "40px"], // Heading/H1
-                h2: ["28px", "36px"], // Heading/H2
-                h3: ["24px", "32px"], // Heading/H3
-                title: ["18px", "24px"], // Title
-                body: ["16px", "24px"], // Body
-                label: ["14px", "20px"], // Label (Lable di gambar)
-                c1: ["12px", "16px"], // Caption/C1
-                c2: ["11px", "13px"], // Caption/C2
+                d1: ["3.5625rem", "4rem"], // 57px, 64px
+                d2: ["2.8125rem", "3.25rem"], // 45px, 52px
+                h1: ["2rem", "2.5rem"], // 32px, 40px
+                h2: ["1.75rem", "2.25rem"], // 28px, 36px
+                h3: ["1.5rem", "2rem"], // 24px, 32px
+                title: ["1.125rem", "1.5rem"], // 18px, 24px
+                body: ["1rem", "1.5rem"], // 16px, 24px
+                label: ["0.875rem", "1.25rem"], // 14px, 20px
+                c1: ["0.75rem", "1rem"], // 12px, 16px
+                c2: ["0.6875rem", "0.8125rem"], // 11px, 13px
             },
             // --- INI BAGIAN YANG SAYA GANTI ---
             colors: {
