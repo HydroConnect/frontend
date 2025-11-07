@@ -36,17 +36,17 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
     const formattedTime = formatTimestamp(timestamp);
     
     return (
-        <View className="flex-row items-center bg-gray-100 rounded-xl p-4 mb-[20px]">
+        <View className="flex-row items-center bg-[#EDEDED] rounded-xl p-4 mb-[20px]">
             <View 
                 className={`w-10 h-10 rounded-full items-center justify-center mr-3`}
             >
                 {icon}
             </View>
             <View className="flex-1">
-                <Typography variant="title" weight="semibold" className="text-gray-800 mb-1">
+                <Typography variant="title" weight="semibold" className="mb-1">
                     {title}
                 </Typography>
-                <Typography variant="label" weight="semibold" className="text-gray-500">
+                <Typography variant="label" weight="semibold">
                     {formattedTime}
                 </Typography>
             </View>
