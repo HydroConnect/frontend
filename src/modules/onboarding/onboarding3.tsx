@@ -3,7 +3,7 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { Text, View } from "react-native";
 import Button from "@/src/components/Button";
-import { AntDesign } from "@expo/vector-icons";
+import { Entypo } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
 const OnboardingScreen3 = () => {
@@ -12,7 +12,14 @@ const OnboardingScreen3 = () => {
         <View className="flex-1 bg-white">
             <LinearGradient
                 colors={["#FFFFFF", "#E0EEE6"]}
-                className="w-full h-1/4 absolute bottom-0 left-0 right-0"
+                style={{
+                    position: "absolute",
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: "25%",
+                    width: "100%",
+                }}
             />
 
             <Button
@@ -21,9 +28,9 @@ const OnboardingScreen3 = () => {
                 variant="secondary"
                 textVariant="body"
                 textWeight="semibold"
-                className="w-[30%] ml-[5%] mt-[12%]"
+                className="w-[30%] ml-[5%] mt-[20%]"
                 iconPosition="left"
-                icon={(props) => <AntDesign name="left" size={16} color="currentColor" />}
+                icon={(props) => <Entypo name="chevron-left" size={16} color="currentColor" />}
             />
 
             <View className="flex-1 items-center justify-center px-8">
@@ -61,6 +68,7 @@ const OnboardingScreen3 = () => {
                     textVariant="h3"
                     textWeight="semibold"
                     className="w-[75%] absolute bottom-[15%] self-center z-20"
+                    iconSize={25}
                 />
             </View>
         </View>

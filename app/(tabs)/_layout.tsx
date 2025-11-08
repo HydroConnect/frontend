@@ -1,7 +1,6 @@
 import { BottomNavbar } from "@/src/components/layout/BottomNavbar";
 import { Tabs } from "expo-router";
 import React from "react";
-import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const Layout = () => {

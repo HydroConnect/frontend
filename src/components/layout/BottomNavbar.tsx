@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import Foundation from "@expo/vector-icons/Foundation";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import React from "react";
 import { TouchableOpacity, View } from "react-native";
@@ -86,7 +87,16 @@ export function BottomNavbar({ state, descriptors, navigation }: BottomTabBarPro
                         {/* 6. ⚠️ BARU: Ini View untuk "Pill" background */}
                         {/* Ikon dan Teks sekarang ada di dalam View ini */}
                         <View className={`w-2/3 px-3 py-2 items-center ${pillClassName}`}>
-                            <Ionicons name={iconName} size={24} color={color} />
+                            {/* Render icon berbeda untuk home */}
+                            {route.name === "home" ? (
+                                <Foundation
+                                    name={isFocused ? "home" : "home"}
+                                    size={24}
+                                    color={color}
+                                />
+                            ) : (
+                                <Ionicons name={iconName} size={24} color={color} />
+                            )}
 
                             <Typography variant="c2" weight={textWeight} className={textColor}>
                                 {label}

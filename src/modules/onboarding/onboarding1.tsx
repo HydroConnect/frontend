@@ -12,7 +12,14 @@ const OnboardingScreen1 = () => {
         <View className="flex-1 bg-white">
             <LinearGradient
                 colors={["#FFFFFF", "#E0EEE6"]}
-                className="w-full h-1/4 absolute bottom-0 left-0 right-0"
+                style={{
+                    position: "absolute",
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: "25%",
+                    width: "100%",
+                }}
             />
             <View className="flex-1 justify-between items-center pb-[17%] px-8">
                 <View className="mt-[120px] w-[330px] items-center">
@@ -37,6 +44,7 @@ const OnboardingScreen1 = () => {
                     textVariant="h3"
                     textWeight="semibold"
                     className="w-[75%] absolute bottom-[15%] self-center z-20"
+                    iconSize={25}
                 />
             </View>
         </View>
