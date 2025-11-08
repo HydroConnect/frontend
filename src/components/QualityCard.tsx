@@ -1,30 +1,29 @@
-import { View, Pressable } from "react-native";
-import React from "react";
+import { View, Pressable, Platform } from "react-native";
+import React, { use } from "react";
 import { Typography } from "@/src/components/Typography";
 import StatusPill from "@/src/components/StatusPill";
 import { Ionicons } from "@expo/vector-icons";
 import Button from "@/src/components/Button";
+import { useRouter } from "expo-router";
 
-// 1. Tentukan tipe status (level 1 s/d 5)
 type Level = 1 | 2 | 3 | 4 | 5;
 
-interface WaterQualityCardProps {
+interface QualityCardProps {
+    label: string;
     level: Level;
+    isButton?: boolean;
 }
 
-// --- Definisikan warna-warna bar ---
-const BAR_OK = "bg-blue-500"; // Biru (Aman)
-const BAR_WARN = "bg-yellow-500"; // Kuning (Bahaya)
-const BAR_EMPTY = "bg-blue-50"; // Abu-abu/biru muda
+const BAR_OK = "bg-blue-400";
+const BAR_WARN = "bg-yellow-500";
+const BAR_EMPTY = "bg-blue-50";
 
-// 2. ✨ "Otak" Komponen: Objek Konfigurasi
-//    Ini nerjemahin 'level' jadi style & teks
 const statusConfig: Record<
     Level,
     {
         pillVariant: "ok" | "warn";
         pillText: string;
-        barSegments: string[]; // Array dari 5 warna bar
+        barSegments: string[];
     }
 > = {
     1: {
@@ -42,7 +41,7 @@ const statusConfig: Record<
     3: {
         // Aman 3
         pillVariant: "ok",
-        pillText: "Aman", // Di gambar "Bersih", tapi di list "Aman 3"
+        pillText: "Aman",
         barSegments: [BAR_OK, BAR_OK, BAR_OK, BAR_EMPTY, BAR_EMPTY],
     },
     4: {
@@ -59,8 +58,8 @@ const statusConfig: Record<
     },
 };
 
-// 3. Komponen Utamanya
-const WaterQualityCard: React.FC<WaterQualityCardProps> = ({ level }) => {
+const QualityCard: React.FC<QualityCardProps> = ({ level, label, isButton }) => {
+    const router = useRouter();
     const { pillVariant, pillText, barSegments } = statusConfig[level];
 
     const handleInfoPress = () => {
@@ -68,14 +67,14 @@ const WaterQualityCard: React.FC<WaterQualityCardProps> = ({ level }) => {
     };
 
     const handleButtonPress = () => {
-        console.log("Tombol Selengkapnya ditekan");
+        router.push("/(details)/water-quality");
     };
 
     return (
-        <View className="rounded-2xl p-4 shadow-md bg-green-50">
+        <View className="w-full rounded-3xl p-4 bg-green-50">
             <View className="flex-row items-center justify-between">
                 <Typography variant="h3" weight="semibold">
-                    Kualitas Air
+                    {label}
                 </Typography>
                 <View className="flex flex-row gap-1 justify-center items-center">
                     <Pressable onPress={handleInfoPress}>
@@ -98,7 +97,6 @@ const WaterQualityCard: React.FC<WaterQualityCardProps> = ({ level }) => {
                         return (
                             <React.Fragment key={index}>
                                 <View className={`flex-1 py-3.5 ${roundedClass} ${segmentColor}`} />
-                                {/* Tambah separator setelah segmen ke-2 (index 1) */}
                                 {index === 1 && (
                                     <View
                                         className="bg-neutral-400"
@@ -110,17 +108,17 @@ const WaterQualityCard: React.FC<WaterQualityCardProps> = ({ level }) => {
                     })}
                 </View>
             </View>
-            {/* --- Bagian Tombol "Button" --- */}
-            <Button
-                onPress={handleButtonPress}
-                label="Selengkapnya"
-                variant="primary"
-                className="mt-4 w-full"
-                textVariant="body"
-                textWeight="semibold"
-            />
+            {isButton && (
+                <Button
+                    onPress={handleButtonPress}
+                    label="Selengkapnya"
+                    variant="primary"
+                    className="mt-4 w-full"
+                    textVariant="body"
+                />
+            )}
         </View>
     );
 };
 
-export default WaterQualityCard;
+export default QualityCard;

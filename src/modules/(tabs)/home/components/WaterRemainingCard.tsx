@@ -1,4 +1,4 @@
-import { View, Pressable } from "react-native";
+import { View, Pressable, Platform } from "react-native";
 import React from "react";
 import { Typography } from "@/src/components/Typography";
 import StatusPill from "@/src/components/StatusPill";
@@ -23,8 +23,8 @@ const statusConfig: Record<
     full: {
         pillVariant: "ok",
         pillText: "Tersedia",
-        segment1Class: "bg-blue-500",
-        segment2Class: "bg-blue-500",
+        segment1Class: "bg-blue-400",
+        segment2Class: "bg-blue-400",
     },
     half: {
         pillVariant: "ok",
@@ -46,8 +46,9 @@ const WaterRemainingCard: React.FC<WaterRemainingCardProps> = ({ status }) => {
     const handleInfoPress = () => {
         console.log("Tombol info Sisa Air ditekan");
     };
+
     return (
-        <View className="rounded-2xl p-4 shadow-md bg-green-50">
+        <View className="rounded-3xl p-4 bg-green-50">
             <View className="flex-row items-center justify-between">
                 <Typography variant="h3" weight="semibold">
                     Sisa Air

@@ -13,19 +13,19 @@ export const StatusPill: React.FC<StatusPillProps> = ({ text, variant }) => {
     // --- Tentukan style berdasarkan 'variant' ---
 
     let bgColor = "bg-white";
-    let textColor = "text-green-900";
+    let textColor = "text-green-600";
     let icon: string | null = null; // 2. Bikin 'icon' jadi opsional (bisa null)
 
     if (variant === "ok") {
         icon = "✅";
-        // bgColor dan textColor sudah default (putih, hitam)
+        textColor = "text-green-600"; // #14532D
     } else if (variant === "warn") {
         bgColor = "bg-red-100"; // #FEDEDE
         textColor = "text-red-800"; // #7F2424
         icon = "❌";
     } else if (variant === "default") {
         icon = null;
-        textColor = "text-green-900";
+        textColor = "text-green-600";
     }
 
     const borderColor = "border-neutral-300";

@@ -1,4 +1,4 @@
-import { AntDesign } from "@expo/vector-icons";
+import Entypo from "@expo/vector-icons/Entypo";
 import React from "react";
 import { Pressable, View } from "react-native";
 import { Typography } from "./Typography";
@@ -35,7 +35,7 @@ const Button = ({
 
     // Default icon adalah chevron right
     const defaultIcon = (props: { color: string; size: number }) => (
-        <AntDesign name="right" {...props} />
+        <Entypo name="chevron-right" {...props} />
     );
 
     const finalIcon = icon || defaultIcon;

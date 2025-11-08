@@ -3,14 +3,27 @@ import React from "react";
 import { View, ScrollView, useWindowDimensions } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import StatusCard from "./components/StatusCard";
-import PumpingStatusCard from "./components/PumpingStatusCard";
+import PumpingStatusCard from "../../../components/PumpingStatusCard";
 import WaterRemainingCard from "./components/WaterRemainingCard";
 import FilterStatusCard from "./components/FilterStatusCard";
-import WaterQualityCard from "./components/WaterQualityCard";
+import QualityCard from "../../../components/QualityCard";
+import PumpDurationChart from "./components/PumpDurationChart";
+
+const MOCK_WEEKLY_DATA = [
+    { day: "Sen", hours: 2 },
+    { day: "Sel", hours: 3 }, // (Anggap max 4)
+    { day: "Rab", hours: 2 },
+    { day: "Kam", hours: 1 },
+    { day: "Jum", hours: 2 },
+    { day: "Sab", hours: 3 },
+    { day: "Min", hours: 4 },
+];
 
 const Home = () => {
     const { height } = useWindowDimensions();
     const navbarPadding = height * 0.1; // 10% dari tinggi layar, lebih responsif
+    const totalHours = 4; // (Nanti ini juga dari API)
+    const currentDate = "Minggu, 24 November 2025"; // (Nanti ini formatTimestamp)
 
     return (
         <View className="flex-1 bg-white">
@@ -34,7 +47,7 @@ const Home = () => {
                     Hydroconnect
                 </Typography>
                 <View className="my-[15%]">
-                    <StatusCard status="empty" />
+                    <StatusCard status="dirty" />
                 </View>
                 <View className="mb-[5%]">
                     <PumpingStatusCard
@@ -52,7 +65,14 @@ const Home = () => {
                     </View>
                 </View>
                 <View className="mt-[8%]">
-                    <WaterQualityCard level={5} />
+                    <QualityCard label="Kualitas Air" level={5} isButton />
+                </View>
+                <View className="mt-[14%]">
+                    <PumpDurationChart
+                        weeklyData={MOCK_WEEKLY_DATA}
+                        totalHours={totalHours}
+                        currentDate={currentDate}
+                    />
                 </View>
             </ScrollView>
         </View>

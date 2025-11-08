@@ -1,51 +1,56 @@
-import { View, ScrollView, useWindowDimensions, TouchableOpacity } from "react-native";
+import { View, ScrollView, useWindowDimensions } from "react-native";
 import React from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import { Typography } from "@/src/components/Typography";
 import Button from "@/src/components/Button";
 import NotificationCard from "./components/NotificationCard";
-import { MaterialIcons } from "@expo/vector-icons";
+import Entypo from "@expo/vector-icons/Entypo";
 import { useRouter } from "expo-router";
-import LogoAirMati from "./components/LogoAirMati";
-import LogoAirNyala from "./components/LogoAirNyala";
+import LogoAirMati from "@/assets/images/informasi/LogoAirMati";
+import LogoAirNyala from "@/assets/images/informasi/LogoAirNyala";
 
 const Informasi = () => {
     const { height } = useWindowDimensions();
-    const navbarPadding = height * 0.1; // 10% dari tinggi layar, lebih responsif
+    const navbarPadding = height * 0.1;
+    const router = useRouter();
 
     return (
         <View className="flex-1 bg-white">
             <LinearGradient
                 colors={["#E0EEE6", "#FFFFFF"]}
-                className="w-full h-1/4 absolute top-0 left-0 right-0"
+                style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: "25%",
+                    width: "100%",
+                }}
             />
             <ScrollView
-                className="flex-1 py-[5%] px-[8%]"
+                className="flex-1 pt-[5%] px-[8%]"
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingBottom: navbarPadding }} // Responsif berdasarkan tinggi layar
             >
-                <Typography variant="h3" weight="semibold">
+                <Typography variant="h3" weight="semibold" className="mb-[15%]">
                     Informasi
                 </Typography>
 
                 {/* Info Section */}
-                <View className="mb-[20px]">
+                <View className="mb-[5%]">
                     {/* Pemantauan Sistem Button */}
-                    <TouchableOpacity
-                        className="flex-row items-center justify-center bg-[#E0EEE6] rounded-full py-[10px] mb-[20px]"
+                    <Button
+                        variant="secondary"
+                        label="Pemantauan Sistem"
+                        textVariant="body"
+                        textWeight="semibold"
+                        className="mb-[5%]"
+                        icon={(props) => <Entypo name="chevron-right" size={18} color="black" />}
                         onPress={() => {
-                            /* Navigate to Pemantauan Sistem */
-                        }}>
-                        <Typography
-                            variant="body"
-                            weight="semibold"
-                            className="text-[#3B6B50] place-content-center">
-                            Pemantauan Sistem
-                        </Typography>
-                        <MaterialIcons name="chevron-right" size={18} color="#3B6B50" />
-                    </TouchableOpacity>
-
-                    <View className="h-[1px] bg-black mb-[20px]" />
+                            router.push("/(details)/system-quality");
+                        }}
+                    />
+                    <View className="h-[1.5px] bg-[#A6A6A6] mb-[24px]" />
 
                     {/* Hubungi Kami Button */}
                     <Button
@@ -53,10 +58,8 @@ const Informasi = () => {
                         variant="primary"
                         textVariant="body"
                         textWeight="semibold"
-                        className="mb-[20px]"
-                        icon={(props) => (
-                            <MaterialIcons name="chevron-right" size={18} color="white" />
-                        )}
+                        className="mb-[5%]"
+                        icon={(props) => <Entypo name="chevron-right" size={18} color="white" />}
                         onPress={() => {
                             /* Navigate to Hubungi Kami */
                         }}
@@ -68,9 +71,7 @@ const Informasi = () => {
                         variant="primary"
                         textVariant="body"
                         textWeight="semibold"
-                        icon={(props) => (
-                            <MaterialIcons name="chevron-right" size={18} color="white" />
-                        )}
+                        icon={(props) => <Entypo name="chevron-right" size={18} color="white" />}
                         onPress={() => {
                             /* Navigate to Tentang Kami */
                         }}
@@ -78,7 +79,7 @@ const Informasi = () => {
                 </View>
 
                 {/*Garis Hitam */}
-                <View className="h-[1px] bg-black mb-[24px]" />
+                <View className="h-[1.5px] bg-[#A6A6A6] mb-[24px]" />
 
                 {/* Pemberitahuan Section */}
                 <View className="mb-20">
@@ -97,13 +98,13 @@ const Informasi = () => {
                     <NotificationCard
                         title="Pompa dimatikan"
                         timestamp={new Date(2025, 10, 7, 8, 20)} // 7 November 2025, 08:20
-                        icon={<LogoAirMati width={35} height={35} />}
+                        icon={<LogoAirMati width={50} height={50} />}
                     />
 
                     <NotificationCard
                         title="Pompa dinyalakan"
                         timestamp={new Date(2025, 10, 7, 10, 45)} // 7 November 2025, 10:45
-                        icon={<LogoAirNyala width={35} height={35} />}
+                        icon={<LogoAirNyala width={50} height={50} />}
                     />
 
                     {/* Kemarin */}
@@ -117,13 +118,13 @@ const Informasi = () => {
                     <NotificationCard
                         title="Pompa dimatikan"
                         timestamp={new Date(2025, 10, 6, 15, 30)} // 6 November 2025, 15:30
-                        icon={<LogoAirMati width={35} height={35} />}
+                        icon={<LogoAirMati width={50} height={50} />}
                     />
 
                     <NotificationCard
                         title="Pompa dinyalakan"
                         timestamp={new Date(2025, 10, 6, 7, 15)} // 6 November 2025, 07:15
-                        icon={<LogoAirNyala width={35} height={35} />}
+                        icon={<LogoAirNyala width={50} height={50} />}
                     />
                 </View>
             </ScrollView>

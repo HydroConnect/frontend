@@ -1,5 +1,5 @@
 import React from "react";
-import { View } from "react-native";
+import { View, Platform } from "react-native";
 import { Typography } from "@/src/components/Typography";
 import { StatusPill } from "@/src/components/StatusPill";
 import GreenWave from "@/assets/images/home/GreenWave";
@@ -60,8 +60,21 @@ const statusConfig: Record<
 const StatusCard: React.FC<StatusCardProps> = ({ status }) => {
     const { title, bgColor, WaveComponent, pills, titleColor } = statusConfig[status];
 
+    // Custom shadow untuk Android - hanya shadow bawah
+    const shadowStyle = Platform.select({
+        ios: {
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.15,
+            shadowRadius: 8,
+        },
+        android: {
+            elevation: 8,
+        },
+    });
+
     return (
-        <View className={`rounded-3xl shadow-lg overflow-hidden ${bgColor}`}>
+        <View className={`rounded-3xl overflow-hidden ${bgColor}`} style={shadowStyle}>
             <View className="p-4 z-10 flex flex-col items-center">
                 <Typography variant="h3" weight="semibold" className={titleColor}>
                     {title}
@@ -73,8 +86,13 @@ const StatusCard: React.FC<StatusCardProps> = ({ status }) => {
                     ))}
                 </View>
             </View>
-            <View className="absolute bottom-0 left-0 right-0 w-full h-32 z-0">
-                <WaveComponent width="100%" height="100%" preserveAspectRatio="none" />
+            <View
+                className="absolute left-0 right-0 w-full z-0"
+                style={{
+                    bottom: -10,
+                    height: 150,
+                }}>
+                <WaveComponent width="100%" height="120%" preserveAspectRatio="xMidYMax slice" />
             </View>
         </View>
     );
