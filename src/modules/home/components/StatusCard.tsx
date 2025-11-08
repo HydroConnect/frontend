@@ -61,7 +61,7 @@ const StatusCard: React.FC<StatusCardProps> = ({ status }) => {
     const { title, bgColor, WaveComponent, pills, titleColor } = statusConfig[status];
 
     return (
-        <View className={`rounded-2xl shadow-lg overflow-hidden ${bgColor}`}>
+        <View className={`rounded-3xl shadow-lg overflow-hidden ${bgColor}`}>
             <View className="p-4 z-10 flex flex-col items-center">
                 <Typography variant="h3" weight="semibold" className={titleColor}>
                     {title}

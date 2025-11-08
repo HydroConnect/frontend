@@ -21,7 +21,7 @@ const OnboardingScreen3 = () => {
                 variant="secondary"
                 textVariant="body"
                 textWeight="semibold"
-                className="w-[30%] ml-[5%] mt-[12%]"
+                className="w-[30%] ml-[5%] mt-[20%]"
                 iconPosition="left"
                 icon={(props) => <AntDesign name="left" size={16} color="currentColor" />}
             />
