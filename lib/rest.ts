@@ -1,6 +1,6 @@
 import { type iSummaries } from "@/schemas/summaries";
 import { BACKEND_API_BASE_URL, BACKEND_API_REST_VERSION } from "./constants";
-import { errorHandler, HttpError } from "./errorHandler";
+import { HttpError } from "./errorHandler";
 
 /**
  * @description Get last 7 days summaries
