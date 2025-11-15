@@ -1,7 +1,7 @@
 import { View, Pressable } from "react-native";
 import React from "react";
 import { Typography } from "@/src/components/Typography";
-import StatusPill from "@/src/components/StatusPill";
+import { StatusPill } from "@/src/components/StatusPill";
 import { Ionicons } from "@expo/vector-icons";
 
 type CardStatus = "full" | "halfLeft" | "halfRight" | "empty";

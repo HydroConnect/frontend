@@ -1,7 +1,7 @@
 import React from "react";
 import { View } from "react-native";
 import { Typography } from "@/src//components/Typography";
-import StatusPill from "@/src/components/StatusPill";
+import { StatusPill } from "@/src/components/StatusPill";
 import type { iReadings } from "@/schemas/readings";
 import { ON_OFF_THRESHOLD_MS } from "@/lib/constants";
 import { formatDate, getJam } from "@/lib/utils";

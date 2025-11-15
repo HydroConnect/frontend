@@ -1,5 +1,5 @@
 import { downloadReports, resumeDownload } from "@/lib/downloadReports";
-import { connectAndListen, disconnect, isConnected, setIsDownloading } from "@/lib/io";
+import { connectAndListen, disconnect, isConnected } from "@/lib/io";
 import { getLatest, getSummaries } from "@/lib/rest";
 import { downloadRequestSample } from "@/schemas/downloadRequest";
 import type { iReadings } from "@/schemas/readings";
