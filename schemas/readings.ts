@@ -3,7 +3,7 @@ interface iReadings {
     pH: number;
     tds: number;
     temperature: number;
-    control: number;
+    control: number; // For control info MSB --> LSB (valve, sensor, distribution, resservoir, tank)
     percent: number;
     timestamp: string;
 }
