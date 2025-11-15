@@ -1,22 +1,18 @@
 import React from "react";
-import { View, Platform } from "react-native";
+import { View } from "react-native";
 import { Typography } from "@/src//components/Typography";
 import StatusPill from "@/src/components/StatusPill";
+import type { iReadings } from "@/schemas/readings";
+import { ON_OFF_THRESHOLD_MS } from "@/lib/constants";
+import { formatDate, getJam } from "@/lib/utils";
 
-type PumpingProps = {
-    status: "pumping"; // Kalau 'pumping', props lain nggak dibutuhkan
-};
-
-type IdleProps = {
-    status: "idle";
-    lastPumpTime: string; // WAJIB ada kalau 'idle'
-    lastPumpDate: string; // WAJIB ada kalau 'idle'
-};
-
-type PumpStatusCardProps = PumpingProps | IdleProps;
-
-const PumpingStatusCard: React.FC<PumpStatusCardProps> = (props) => {
-    if (props.status === "pumping") {
+const PumpingStatusCard: React.FC<{ reading: iReadings | null; [key: string]: unknown }> = ({
+    reading,
+}) => {
+    if (reading === null) {
+        return <View></View>;
+    }
+    if (Date.now() - new Date(reading.timestamp).getTime() <= ON_OFF_THRESHOLD_MS) {
         return (
             <View className="w-full rounded-3xl p-4 bg-green-50">
                 <Typography
@@ -40,8 +36,8 @@ const PumpingStatusCard: React.FC<PumpStatusCardProps> = (props) => {
                 Data Sejak Pompa Menyala
             </Typography>
             <View className="flex-row justify-center items-center space-x-2">
-                <StatusPill text={props.lastPumpTime} variant="default" />
-                <StatusPill text={props.lastPumpDate} variant="default" />
+                <StatusPill text={getJam(new Date(reading.timestamp))} variant="default" />
+                <StatusPill text={formatDate(new Date(reading.timestamp))} variant="default" />
             </View>
         </View>
     );

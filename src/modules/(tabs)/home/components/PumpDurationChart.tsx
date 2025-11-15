@@ -3,38 +3,28 @@ import React from "react";
 import { Typography } from "@/src/components/Typography";
 import StatusPill from "@/src/components/StatusPill"; // Impor StatusPill global-mu
 import { Ionicons } from "@expo/vector-icons";
+import type { iSummaries } from "@/schemas/summaries";
+import { formatDate, getHari, round } from "@/lib/utils";
+import { SUMMARY_GRAPH_PRECISION } from "@/lib/constants";
 
-// 1. Definisikan tipe data yang akan diterima
-//    Ini yang akan kamu kirim dari API/WebSocket
-interface BarData {
-    day: string; // "Senin", "Selasa", ...
-    hours: number;
-}
-
-interface PumpDurationChartProps {
-    // Array 7 hari dari data
-    weeklyData: BarData[];
-    // Data untuk "Telah menyala..."
-    totalHours: number;
-    // Data untuk "Minggu, 24 November 2025"
-    currentDate: string;
-}
-
-// 2. Tentukan tinggi MAKSIMAL chart-nya (dalam px)
 const CHART_MAX_HEIGHT_PX = 150; // 100px (atau h-24 di Tailwind)
 
-// 3. Komponen Utamanya
-const PumpDurationChart: React.FC<PumpDurationChartProps> = ({
-    weeklyData,
-    totalHours,
-    currentDate,
+const PumpDurationChart: React.FC<{ summaries: iSummaries[] | null; [key: string]: unknown }> = ({
+    summaries,
 }) => {
+    if (summaries === null) {
+        return <View></View>;
+    }
+
     const handleInfoPress = () => {
         console.log("Tombol info Lama Pompa ditekan");
     };
 
-    // 4. Cari nilai jam tertinggi untuk nentuin skala
-    const maxHours = Math.max(...weeklyData.map((d) => d.hours), 1); // (kasih 1 biar nggak / 0)
+    // Nilai seconds tertinggi untuk nentuin skala
+    let maxHour = 0;
+    for (let i = 0; i < summaries.length; i++) {
+        maxHour = Math.max(maxHour, round(summaries[i]!.uptime / 3600, SUMMARY_GRAPH_PRECISION));
+    }
 
     return (
         <View className="rounded-3xl p-4 bg-green-50">
@@ -46,20 +36,26 @@ const PumpDurationChart: React.FC<PumpDurationChartProps> = ({
                     <Ionicons name="help-circle" size={30} color={"#7D9F8C"} />
                 </Pressable>
             </View>
+
             {/* --- Subjudul (Tanggal) --- */}
             <Typography variant="label" className="text-black">
-                {currentDate}
+                {formatDate(new Date())}
             </Typography>
             <View className="mt-3 self-start">
-                <StatusPill variant="default" text={`Telah menyala ${totalHours} Jam`} />
+                <StatusPill
+                    variant="default"
+                    text={`Telah menyala ${round(summaries[0]!.uptime / 3600, SUMMARY_GRAPH_PRECISION)} Jam`}
+                />
             </View>
+
             {/* --- Bagian CHART (Intinya) --- */}
             <View
                 className="mt-[3%] flex-row justify-between items-end"
                 style={{ height: CHART_MAX_HEIGHT_PX + 40 }}>
-                {weeklyData.map((item, index) => {
+                {summaries.reverse().map(({ uptime, timestamp }, index) => {
                     // 5. Hitung tinggi bar-nya
-                    const barHeight = (item.hours / maxHours) * CHART_MAX_HEIGHT_PX;
+                    const hourUptime = round(uptime / 3600, SUMMARY_GRAPH_PRECISION);
+                    const barHeight = (hourUptime / maxHour) * CHART_MAX_HEIGHT_PX;
 
                     return (
                         <View key={index} className="flex-1 items-center space-y-1">
@@ -68,7 +64,7 @@ const PumpDurationChart: React.FC<PumpDurationChartProps> = ({
                                 variant="c2"
                                 weight="semibold"
                                 className="text-blue-400 mb-1">
-                                {item.hours} jam
+                                {hourUptime} jam
                             </Typography>
 
                             {/* Bar-nya */}
@@ -79,7 +75,7 @@ const PumpDurationChart: React.FC<PumpDurationChartProps> = ({
 
                             {/* Label Bawah (Hari) */}
                             <Typography variant="c2" weight="semibold" className="text-black mt-1">
-                                {item.day}
+                                {getHari(new Date(timestamp))}
                             </Typography>
                         </View>
                     );

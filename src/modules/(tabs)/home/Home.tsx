@@ -1,6 +1,6 @@
 import { Typography } from "@/src/components/Typography";
-import React from "react";
-import { View, ScrollView, useWindowDimensions } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, ScrollView, useWindowDimensions, Text } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import StatusCard from "./components/StatusCard";
 import PumpingStatusCard from "../../../components/PumpingStatusCard";
@@ -8,22 +8,33 @@ import WaterRemainingCard from "./components/WaterRemainingCard";
 import FilterStatusCard from "./components/FilterStatusCard";
 import QualityCard from "../../../components/QualityCard";
 import PumpDurationChart from "./components/PumpDurationChart";
-
-const MOCK_WEEKLY_DATA = [
-    { day: "Sen", hours: 2 },
-    { day: "Sel", hours: 3 }, // (Anggap max 4)
-    { day: "Rab", hours: 2 },
-    { day: "Kam", hours: 1 },
-    { day: "Jum", hours: 2 },
-    { day: "Sab", hours: 3 },
-    { day: "Min", hours: 4 },
-];
+import { getLatest, getSummaries } from "@/lib/rest";
+import type { iSummaries } from "@/schemas/summaries";
+import type { iReadings } from "@/schemas/readings";
 
 const Home = () => {
     const { height } = useWindowDimensions();
-    const navbarPadding = height * 0.1; // 10% dari tinggi layar, lebih responsif
-    const totalHours = 4; // (Nanti ini juga dari API)
-    const currentDate = "Minggu, 24 November 2025"; // (Nanti ini formatTimestamp)
+    const navbarPadding = height * 0.1;
+    const [latestReading, setLatestReading] = useState<null | iReadings>(null);
+    const [summaries, setSummaries] = useState<null | iSummaries[]>(null);
+
+    useEffect(() => {
+        getLatest().then((data) => {
+            if (data instanceof Error) {
+                console.log("Error Occured!\n");
+                return;
+            }
+            setLatestReading(data);
+        });
+        getSummaries().then((data) => {
+            if (data instanceof Error) {
+                console.log("Error Occured!\n");
+                return;
+            }
+            setSummaries(data);
+        });
+        console.log("WWW");
+    }, []);
 
     return (
         <View className="flex-1 bg-white">
@@ -47,32 +58,26 @@ const Home = () => {
                     Hydroconnect
                 </Typography>
                 <View className="my-[15%]">
-                    <StatusCard status="dirty" />
+                    <StatusCard status="safe" />
                 </View>
                 <View className="mb-[5%]">
-                    <PumpingStatusCard
-                        status="idle"
-                        lastPumpTime="10:00"
-                        lastPumpDate="Sabtu, 31 Oktober 2025"
-                    />
+                    <PumpingStatusCard reading={latestReading} />
                 </View>
                 <View className="flex-row gap-[8%] mt-[3%]">
                     <View className="flex-1">
-                        <WaterRemainingCard status="empty" />
+                        <WaterRemainingCard
+                            control={latestReading ? latestReading.control : null}
+                        />
                     </View>
                     <View className="flex-1">
-                        <FilterStatusCard status="empty" />
+                        <FilterStatusCard percent={latestReading ? latestReading.percent : null} />
                     </View>
                 </View>
                 <View className="mt-[8%]">
                     <QualityCard label="Kualitas Air" level={5} isButton />
                 </View>
                 <View className="mt-[14%]">
-                    <PumpDurationChart
-                        weeklyData={MOCK_WEEKLY_DATA}
-                        totalHours={totalHours}
-                        currentDate={currentDate}
-                    />
+                    <PumpDurationChart summaries={summaries} />
                 </View>
             </ScrollView>
         </View>

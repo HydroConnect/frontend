@@ -8,11 +8,14 @@ import Entypo from "@expo/vector-icons/Entypo";
 import { useRouter } from "expo-router";
 import LogoAirMati from "@/assets/images/informasi/LogoAirMati";
 import LogoAirNyala from "@/assets/images/informasi/LogoAirNyala";
+import { debounce } from "@/lib/utils";
 
 const Informasi = () => {
     const { height } = useWindowDimensions();
     const navbarPadding = height * 0.1;
     const router = useRouter();
+
+    let timeout = {};
 
     return (
         <View className="flex-1 bg-white">
@@ -47,7 +50,9 @@ const Informasi = () => {
                         className="mb-[5%]"
                         icon={(props) => <Entypo name="chevron-right" size={18} color="black" />}
                         onPress={() => {
-                            router.push("/(details)/system-quality");
+                            debounce(timeout, () => {
+                                router.push("/(details)/system-quality");
+                            });
                         }}
                     />
                     <View className="h-[1.5px] bg-[#A6A6A6] mb-[24px]" />

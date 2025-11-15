@@ -1,16 +1,30 @@
 import { View, ScrollView, useWindowDimensions } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Typography } from "@/src/components/Typography";
 import Button from "@/src/components/Button";
 import { useRouter } from "expo-router";
 import Entypo from "@expo/vector-icons/Entypo";
 import PumpingStatusCard from "@/src/components/PumpingStatusCard";
 import SensorStatusCard from "./components/SensorStatusCard";
+import type { iReadings } from "@/schemas/readings";
+import { getLatest } from "@/lib/rest";
 
 const SystemQuality = () => {
     const router = useRouter();
     const { height } = useWindowDimensions();
     const navbarPadding = height * 0.1; // 10% dari tinggi layar, lebih responsif
+    const [latestReading, setLatestReading] = useState<iReadings | null>(null);
+
+    useEffect(() => {
+        getLatest().then((data) => {
+            if (data instanceof Error) {
+                console.log("Error Occured");
+                return;
+            }
+            setLatestReading(data);
+        });
+    }, []);
+
     return (
         <View className="flex-1 bg-white">
             <ScrollView
@@ -21,11 +35,47 @@ const SystemQuality = () => {
                     Pemantauan Sistem
                 </Typography>
                 <View className="flex flex-col items-center justify-center gap-[5%] mx-2">
-                    <PumpingStatusCard status="pumping" />
-                    <SensorStatusCard status="safe" title="Sensor suhu" />
-                    <SensorStatusCard status="danger" title="Sensor pH" />
-                    <SensorStatusCard status="safe" title="Tandon 1" />
-                    <SensorStatusCard status="danger" title="Tandon 2" />
+                    <PumpingStatusCard reading={latestReading} />
+                    <SensorStatusCard
+                        controlValue={
+                            latestReading === null
+                                ? null
+                                : (((latestReading.control >> 4) & 1) as unknown as boolean)
+                        }
+                        title="Valve"
+                    />
+                    <SensorStatusCard
+                        controlValue={
+                            latestReading === null
+                                ? null
+                                : (((latestReading.control >> 3) & 1) as unknown as boolean)
+                        }
+                        title="Sensor"
+                    />
+                    <SensorStatusCard
+                        controlValue={
+                            latestReading === null
+                                ? null
+                                : (((latestReading.control >> 2) & 1) as unknown as boolean)
+                        }
+                        title="Distribusi"
+                    />
+                    <SensorStatusCard
+                        controlValue={
+                            latestReading === null
+                                ? null
+                                : (((latestReading.control >> 1) & 1) as unknown as boolean)
+                        }
+                        title="Tandon"
+                    />
+                    <SensorStatusCard
+                        controlValue={
+                            latestReading === null
+                                ? null
+                                : (((latestReading.control >> 0) & 1) as unknown as boolean)
+                        }
+                        title="Tanki"
+                    />
                 </View>
                 <View className="flex items-center justify-center">
                     <Button

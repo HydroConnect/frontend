@@ -8,11 +8,15 @@ type SensorStatus = "safe" | "danger";
 
 interface SensorStatusCardProps {
     title: string; // Misal: "Sensor suhu", "Sensor pH"
-    status: SensorStatus; // "aman" atau "bahaya"
+    controlValue: boolean | null;
 }
 
-const SensorStatusCard: React.FC<SensorStatusCardProps> = ({ title, status }) => {
+const SensorStatusCard: React.FC<SensorStatusCardProps> = ({ title, controlValue }) => {
     // Tentukan variant pill berdasarkan status
+    if (controlValue === null) {
+        return <View></View>;
+    }
+    const status: SensorStatus = controlValue ? "safe" : "danger";
     const pillVariant = status === "safe" ? "ok" : "warn";
     const pillText = status === "safe" ? "Aman" : "Bahaya";
 

@@ -1,14 +1,10 @@
-import { View, Pressable, Platform } from "react-native";
+import { View, Pressable } from "react-native";
 import React from "react";
 import { Typography } from "@/src/components/Typography";
 import StatusPill from "@/src/components/StatusPill";
 import { Ionicons } from "@expo/vector-icons";
 
 type CardStatus = "full" | "half" | "empty";
-
-interface FilterStatusProps {
-    status: CardStatus;
-}
 
 const statusConfig: Record<
     CardStatus,
@@ -39,7 +35,21 @@ const statusConfig: Record<
     },
 };
 
-const FilterStatusCard: React.FC<FilterStatusProps> = ({ status }) => {
+const FilterStatusCard: React.FC<{ percent: number | null; [key: string]: unknown }> = ({
+    percent,
+}) => {
+    if (percent === null) {
+        return <View></View>;
+    }
+
+    let status: CardStatus;
+
+    if (percent > 0.9) {
+        status = "full";
+    } else {
+        status = "empty";
+    }
+
     const { pillVariant, pillText, segment1Class, segment2Class } = statusConfig[status];
 
     const handleInfoPress = () => {

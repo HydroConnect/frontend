@@ -1,14 +1,10 @@
-import { View, Pressable, Platform } from "react-native";
+import { View, Pressable } from "react-native";
 import React from "react";
 import { Typography } from "@/src/components/Typography";
 import StatusPill from "@/src/components/StatusPill";
 import { Ionicons } from "@expo/vector-icons";
 
-type CardStatus = "full" | "half" | "empty";
-
-interface WaterRemainingCardProps {
-    status: CardStatus;
-}
+type CardStatus = "full" | "halfLeft" | "halfRight" | "empty";
 
 // 1. Config yang sudah di-update
 const statusConfig: Record<
@@ -26,11 +22,17 @@ const statusConfig: Record<
         segment1Class: "bg-blue-400",
         segment2Class: "bg-blue-400",
     },
-    half: {
+    halfLeft: {
         pillVariant: "ok",
         pillText: "Tersedia",
         segment1Class: "bg-yellow-500",
         segment2Class: "bg-blue-50",
+    },
+    halfRight: {
+        pillVariant: "ok",
+        pillText: "Tersedia",
+        segment1Class: "bg-blue-50",
+        segment2Class: "bg-yellow-500",
     },
     empty: {
         pillVariant: "warn",
@@ -40,7 +42,29 @@ const statusConfig: Record<
     },
 };
 
-const WaterRemainingCard: React.FC<WaterRemainingCardProps> = ({ status }) => {
+const WaterRemainingCard: React.FC<{ control: number | null; [key: string]: unknown }> = ({
+    control,
+}) => {
+    if (control === null) {
+        return <View></View>;
+    }
+
+    const tank = control & 1;
+    const reservoir = (control >> 1) & 1;
+
+    console.log(control);
+
+    let status: CardStatus;
+    if (tank && reservoir) {
+        status = "full";
+    } else if (tank && !reservoir) {
+        status = "halfLeft";
+    } else if (!tank && reservoir) {
+        status = "halfRight";
+    } else {
+        status = "empty";
+    }
+
     const { pillVariant, pillText, segment1Class, segment2Class } = statusConfig[status];
 
     const handleInfoPress = () => {
