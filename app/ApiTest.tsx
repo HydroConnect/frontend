@@ -1,6 +1,6 @@
 import { downloadReports, resumeDownload } from "@/lib/downloadReports";
 import { connectAndListen, disconnect, isConnected, setIsDownloading } from "@/lib/io";
-import { getSummaries } from "@/lib/rest";
+import { getLatest, getSummaries } from "@/lib/rest";
 import { downloadRequestSample } from "@/schemas/downloadRequest";
 import type { iReadings } from "@/schemas/readings";
 import { type iSummaries } from "@/schemas/summaries";
@@ -31,19 +31,24 @@ const ApiTest = () => {
                     <Button
                         title="GET /summary"
                         onPress={() => {
-                            setIsDownloading(false);
                             getSummaries().then((data) => {
-                                if (data === null) {
-                                    print("Error getting data!");
-                                    return;
-                                }
-                                // handle Error return type from getSummaries
                                 if (data instanceof Error) {
                                     print(data);
                                     return;
                                 }
-                                // print(data);
                                 setSummary(data);
+                            });
+                        }}
+                    />
+                    <Button
+                        title="GET /latest"
+                        onPress={() => {
+                            getLatest().then((data) => {
+                                if (data instanceof Error) {
+                                    print(data);
+                                    return;
+                                }
+                                print(data);
                             });
                         }}
                     />
