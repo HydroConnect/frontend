@@ -5,9 +5,13 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { Image, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { debounce } from "@/lib/utils";
 
 const OnboardingScreen1 = () => {
     const router = useRouter();
+
+    let timeout = {};
+
     return (
         <View className="flex-1 bg-white">
             <LinearGradient
@@ -40,7 +44,11 @@ const OnboardingScreen1 = () => {
                 <Button
                     label="Mulai"
                     variant="primary"
-                    onPress={() => router.push("/onboarding/onboarding2")}
+                    onPress={() => {
+                        debounce(timeout, () => {
+                            router.push("/onboarding/onboarding2");
+                        });
+                    }}
                     textVariant="h3"
                     textWeight="semibold"
                     className="w-[75%] absolute bottom-[15%] self-center z-20"

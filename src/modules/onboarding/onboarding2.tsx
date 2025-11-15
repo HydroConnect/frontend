@@ -5,9 +5,12 @@ import { View, Text } from "react-native";
 import Button from "@/src/components/Button";
 import { Entypo } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { debounce } from "@/lib/utils";
 
 const OnboardingScreen2 = () => {
     const router = useRouter();
+
+    let timeout = {};
 
     return (
         <View className="flex-1 bg-white">
@@ -58,7 +61,9 @@ const OnboardingScreen2 = () => {
                     label="Lanjut"
                     variant="primary"
                     onPress={() => {
-                        router.push("/onboarding/onboarding3");
+                        debounce(timeout, () => {
+                            router.push("/onboarding/onboarding3");
+                        });
                     }}
                     textVariant="h3"
                     textWeight="semibold"
