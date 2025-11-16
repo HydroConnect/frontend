@@ -5,12 +5,13 @@ import { StatusPill } from "@/src/components/StatusPill";
 import type { iReadings } from "@/schemas/readings";
 import { ON_OFF_THRESHOLD_MS } from "@/lib/constants";
 import { formatDate, getJam } from "@/lib/utils";
+import { CardShimmer } from "./Shimmer";
 
 const PumpingStatusCard: React.FC<{ reading: iReadings | null; [key: string]: unknown }> = ({
     reading,
 }) => {
     if (reading === null) {
-        return <View></View>;
+        return <CardShimmer />;
     }
     if (Date.now() - new Date(reading.timestamp).getTime() <= ON_OFF_THRESHOLD_MS) {
         return (

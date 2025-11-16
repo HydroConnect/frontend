@@ -1,4 +1,4 @@
-import { View, ScrollView, useWindowDimensions } from "react-native";
+import { View, ScrollView, useWindowDimensions, RefreshControl } from "react-native";
 import React, { useEffect, useState } from "react";
 import { Typography } from "@/src/components/Typography";
 import Button from "@/src/components/Button";
@@ -14,15 +14,25 @@ const SystemQuality = () => {
     const { height } = useWindowDimensions();
     const navbarPadding = height * 0.1; // 10% dari tinggi layar, lebih responsif
     const [latestReading, setLatestReading] = useState<iReadings | null>(null);
+    const [refreshing, setRefreshing] = useState(false);
+
+    const fetchData = async () => {
+        const data = await getLatest();
+        if (!(data instanceof Error)) {
+            setLatestReading(data);
+        } else {
+            console.log("Error Occured!");
+        }
+    };
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await fetchData();
+        setRefreshing(false);
+    };
 
     useEffect(() => {
-        getLatest().then((data) => {
-            if (data instanceof Error) {
-                console.log("Error Occured");
-                return;
-            }
-            setLatestReading(data);
-        });
+        fetchData();
     }, []);
 
     return (
@@ -30,7 +40,15 @@ const SystemQuality = () => {
             <ScrollView
                 className="flex-1 pt-[5%] px-[8%]"
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: navbarPadding }}>
+                contentContainerStyle={{ paddingBottom: navbarPadding }}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                        colors={["#7D9F8C"]} // Android
+                        tintColor="#000000" // iOS
+                    />
+                }>
                 <Typography variant="h3" weight="semibold" className="pb-[15%]">
                     Pemantauan Sistem
                 </Typography>

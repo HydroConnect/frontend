@@ -6,6 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import type { iSummaries } from "@/schemas/summaries";
 import { formatDate, getHari, round } from "@/lib/utils";
 import { SUMMARY_GRAPH_PRECISION } from "@/lib/constants";
+import { CardShimmer } from "@/src/components/Shimmer";
 
 const CHART_MAX_HEIGHT_PX = 150; // 100px (atau h-24 di Tailwind)
 
@@ -13,7 +14,7 @@ const PumpDurationChart: React.FC<{ summaries: iSummaries[] | null; [key: string
     summaries,
 }) => {
     if (summaries === null) {
-        return <View></View>;
+        return <CardShimmer />;
     }
 
     const handleInfoPress = () => {

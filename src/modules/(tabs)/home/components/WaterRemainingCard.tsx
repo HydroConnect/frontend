@@ -3,6 +3,7 @@ import React from "react";
 import { Typography } from "@/src/components/Typography";
 import { StatusPill } from "@/src/components/StatusPill";
 import { Ionicons } from "@expo/vector-icons";
+import { CardShimmer } from "@/src/components/Shimmer";
 
 type CardStatus = "full" | "halfLeft" | "halfRight" | "empty";
 
@@ -46,7 +47,7 @@ const WaterRemainingCard: React.FC<{ control: number | null; [key: string]: unkn
     control,
 }) => {
     if (control === null) {
-        return <View></View>;
+        return <CardShimmer variant="half" />;
     }
 
     const tank = control & 1;

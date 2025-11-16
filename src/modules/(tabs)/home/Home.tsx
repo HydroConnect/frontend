@@ -1,6 +1,6 @@
 import { Typography } from "@/src/components/Typography";
 import React, { useEffect, useState } from "react";
-import { View, ScrollView, useWindowDimensions } from "react-native";
+import { View, ScrollView, useWindowDimensions, RefreshControl } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import StatusCard from "./components/StatusCard";
 import PumpingStatusCard from "../../../components/PumpingStatusCard";
@@ -17,23 +17,32 @@ const Home = () => {
     const navbarPadding = height * 0.1;
     const [latestReading, setLatestReading] = useState<null | iReadings>(null);
     const [summaries, setSummaries] = useState<null | iSummaries[]>(null);
+    const [refreshing, setRefreshing] = useState(false);
+
+    const fetchData = async () => {
+        const [latestData, summariesData] = await Promise.all([getLatest(), getSummaries()]);
+
+        if (!(latestData instanceof Error)) {
+            setLatestReading(latestData);
+        } else {
+            console.log("Error fetching latest reading");
+        }
+
+        if (!(summariesData instanceof Error)) {
+            setSummaries(summariesData);
+        } else {
+            console.log("Error fetching summaries");
+        }
+    };
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await fetchData();
+        setRefreshing(false);
+    };
 
     useEffect(() => {
-        getLatest().then((data) => {
-            if (data instanceof Error) {
-                console.log("Error Occured!\n");
-                return;
-            }
-            setLatestReading(data);
-        });
-        getSummaries().then((data) => {
-            if (data instanceof Error) {
-                console.log("Error Occured!\n");
-                return;
-            }
-            setSummaries(data);
-        });
-        console.log("WWW");
+        fetchData();
     }, []);
 
     return (
@@ -53,7 +62,14 @@ const Home = () => {
                 className="flex-1 pt-[5%] px-[8%]"
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingBottom: navbarPadding }} // Responsif berdasarkan tinggi layar
-            >
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                        colors={["#7D9F8C"]} // Android
+                        tintColor="#000000" // iOS
+                    />
+                }>
                 <Typography variant="h3" weight="semibold">
                     Hydroconnect
                 </Typography>
