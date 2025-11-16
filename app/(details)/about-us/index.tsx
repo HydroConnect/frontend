@@ -5,7 +5,7 @@ import { StatusBar } from "expo-status-bar";
 
 const index = () => {
     return (
-        <SafeAreaView className="flex-1 bg-black" edges={["bottom"]}>
+        <SafeAreaView className="flex-1 bg-white" edges={["bottom"]}>
             <StatusBar backgroundColor="white" style="dark" />
             <AboutUs />
         </SafeAreaView>

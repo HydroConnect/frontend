@@ -1,17 +1,20 @@
 {
   "expo": {
-    "name": "fe",
+    "name": "HydroConnect",
     "slug": "fe",
     "version": "1.0.0",
+    "runtimeVersion": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "fe",
+    "icon": "./assets/images/icon-hc.png",
+    "scheme": "hydroconnect",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
+      "bundleIdentifier": "com.hydroconnect.app",
       "supportsTablet": true
     },
     "android": {
+      "package": "com.hydroconnect.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -46,6 +49,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "983010ea-c49f-461f-be4d-c0d1fa8a684e"
+      }
     }
   }
 }
