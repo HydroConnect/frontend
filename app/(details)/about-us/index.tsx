@@ -1,15 +1,15 @@
-import OnboardingScreen3 from "@/src/modules/onboarding/onboarding3";
-import { StatusBar } from "expo-status-bar";
 import React from "react";
+import AboutUs from "@/src/modules/(details)/about-us/AboutUs";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
 
-const Onboarding3 = () => {
+const index = () => {
     return (
         <SafeAreaView className="flex-1 bg-black" edges={["bottom"]}>
             <StatusBar backgroundColor="white" style="dark" />
-            <OnboardingScreen3 />
+            <AboutUs />
         </SafeAreaView>
     );
 };
 
-export default Onboarding3;
+export default index;
