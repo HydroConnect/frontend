@@ -1,7 +1,10 @@
 import { type iSummaries } from "@/schemas/summaries";
-import { BACKEND_API_BASE_URL, BACKEND_API_REST_VERSION } from "./constants";
+import { BACKEND_API_BASE_URL, BACKEND_API_REST_VERSION, FETCH_REST_TIME_MS } from "./constants";
 import { HttpError } from "./errorHandler";
 import type { iReadings } from "@/schemas/readings";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { globals } from "./globals";
+import NetInfo from "@react-native-community/netinfo";
 
 /**
  * @description Get last 7 days summaries
@@ -38,5 +41,69 @@ export async function getLatest(): Promise<iReadings | Error> {
         return json;
     } catch {
         return new HttpError(500);
+    }
+}
+
+export async function prefetch(
+    setLatestReading: ((...args: any[]) => any) | null,
+    setSummaries: ((...args: any[]) => any) | null
+) {
+    if (globals.GLatestReadings === null) {
+        globals.GLatestReadings = JSON.parse(
+            (await AsyncStorage.getItem("reading")) ?? "null"
+        ) as iReadings | null;
+    }
+    if (globals.GSummaries === null) {
+        globals.GSummaries = JSON.parse((await AsyncStorage.getItem("summaries")) ?? "null") as
+            | iSummaries[]
+            | null;
+    }
+
+    if (setLatestReading !== null) {
+        setLatestReading(globals.GLatestReadings);
+    }
+    if (setSummaries !== null) {
+        setSummaries(globals.GSummaries);
+    }
+}
+
+export async function fetchData(
+    setLatestReading: ((...args: any[]) => any) | null,
+    setSummaries: ((...args: any[]) => any) | null
+) {
+    if (
+        globals.GLastFetch !== null &&
+        Date.now() - globals.GLastFetch.getTime() <= FETCH_REST_TIME_MS
+    ) {
+        return;
+    }
+    let isSuccess = true;
+    const [readingData, summariesData] = await Promise.all([getLatest(), getSummaries()]);
+
+    if (!(readingData instanceof Error)) {
+        globals.GLatestReadings = readingData;
+        await AsyncStorage.setItem("reading", JSON.stringify(readingData));
+        if (setLatestReading !== null) {
+            setLatestReading(readingData);
+        }
+    } else {
+        console.log("Error fetching latest reading");
+        isSuccess = false;
+        NetInfo.refresh();
+    }
+
+    if (!(summariesData instanceof Error)) {
+        globals.GSummaries = summariesData;
+        await AsyncStorage.setItem("reading", JSON.stringify(readingData));
+        if (setSummaries !== null) {
+            setSummaries(summariesData);
+        }
+    } else {
+        console.log("Error fetching summaries");
+        isSuccess = false;
+        NetInfo.refresh();
+    }
+    if (isSuccess) {
+        globals.GLastFetch = new Date();
     }
 }
