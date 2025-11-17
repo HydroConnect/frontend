@@ -1,16 +1,16 @@
-import { View, Pressable, Platform } from "react-native";
-import React, { use } from "react";
+import { View, Pressable } from "react-native";
+import React from "react";
 import { Typography } from "@/src/components/Typography";
-import StatusPill from "@/src/components/StatusPill";
+import { StatusPill } from "@/src/components/StatusPill";
 import { Ionicons } from "@expo/vector-icons";
 import Button from "@/src/components/Button";
 import { useRouter } from "expo-router";
-
-type Level = 1 | 2 | 3 | 4 | 5;
+import { CardShimmer } from "./Shimmer";
+import type { Level } from "@/lib/chemFormula";
 
 interface QualityCardProps {
     label: string;
-    level: Level;
+    level: null | Level;
     isButton?: boolean;
 }
 
@@ -60,6 +60,9 @@ const statusConfig: Record<
 
 const QualityCard: React.FC<QualityCardProps> = ({ level, label, isButton }) => {
     const router = useRouter();
+    if (level === null) {
+        return <CardShimmer />;
+    }
     const { pillVariant, pillText, barSegments } = statusConfig[level];
 
     const handleInfoPress = () => {
