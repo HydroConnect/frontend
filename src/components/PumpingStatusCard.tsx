@@ -36,7 +36,7 @@ const PumpingStatusCard: React.FC<{ reading: iReadings | null; [key: string]: un
                 className="text-center text-[#383838] mb-2">
                 Data Sejak Pompa Menyala
             </Typography>
-            <View className="flex-row justify-center items-center space-x-2">
+            <View className="flex-row justify-center items-center gap-x-2">
                 <StatusPill text={getJam(new Date(reading.timestamp))} variant="default" />
                 <StatusPill text={formatDate(new Date(reading.timestamp))} variant="default" />
             </View>
