@@ -53,8 +53,6 @@ const WaterRemainingCard: React.FC<{ control: number | null; [key: string]: unkn
     const tank = control & 1;
     const reservoir = (control >> 1) & 1;
 
-    console.log(control);
-
     let status: CardStatus;
     if (tank && reservoir) {
         status = "full";
@@ -78,12 +76,14 @@ const WaterRemainingCard: React.FC<{ control: number | null; [key: string]: unkn
                 <Typography variant="h3" weight="semibold">
                     Sisa Air
                 </Typography>
-                <Pressable onPress={handleInfoPress}>
-                    <Ionicons name="help-circle" size={30} color={"#7D9F8C"} />
-                </Pressable>
-            </View>
-            <View className="mt-2 self-start ">
-                <StatusPill variant={pillVariant} text={pillText} />
+                <View className="flex-row justify-center items-center gap-x-1">
+                    <Pressable onPress={handleInfoPress}>
+                        <Ionicons name="help-circle" size={30} color={"#7D9F8C"} />
+                    </Pressable>
+                    <View>
+                        <StatusPill variant={pillVariant} text={pillText} />
+                    </View>
+                </View>
             </View>
             <View className="mt-4">
                 <View className="flex-row items-center gap-1 bg-white rounded-full p-1.5">

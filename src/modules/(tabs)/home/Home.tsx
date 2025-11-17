@@ -5,12 +5,13 @@ import { LinearGradient } from "expo-linear-gradient";
 import StatusCard from "./components/StatusCard";
 import PumpingStatusCard from "../../../components/PumpingStatusCard";
 import WaterRemainingCard from "./components/WaterRemainingCard";
-import FilterStatusCard from "./components/FilterStatusCard";
 import QualityCard from "../../../components/QualityCard";
 import PumpDurationChart from "./components/PumpDurationChart";
-import { getLatest, getSummaries } from "@/lib/rest";
+import { fetchData, prefetch } from "@/lib/rest";
+import NetInfo from "@react-native-community/netinfo";
 import type { iSummaries } from "@/schemas/summaries";
 import type { iReadings } from "@/schemas/readings";
+import { percentToLevel } from "@/lib/chemFormula";
 
 const Home = () => {
     const { height } = useWindowDimensions();
@@ -19,30 +20,22 @@ const Home = () => {
     const [summaries, setSummaries] = useState<null | iSummaries[]>(null);
     const [refreshing, setRefreshing] = useState(false);
 
-    const fetchData = async () => {
-        const [latestData, summariesData] = await Promise.all([getLatest(), getSummaries()]);
-
-        if (!(latestData instanceof Error)) {
-            setLatestReading(latestData);
-        } else {
-            console.log("Error fetching latest reading");
-        }
-
-        if (!(summariesData instanceof Error)) {
-            setSummaries(summariesData);
-        } else {
-            console.log("Error fetching summaries");
-        }
-    };
-
     const onRefresh = async () => {
         setRefreshing(true);
-        await fetchData();
+        await prefetch(setLatestReading, setSummaries);
+        await fetchData(setLatestReading, setSummaries);
         setRefreshing(false);
     };
 
     useEffect(() => {
-        fetchData();
+        prefetch(setLatestReading, setSummaries).then(() => {
+            fetchData(setLatestReading, setSummaries);
+        });
+        NetInfo.addEventListener((state) => {
+            if (state.isInternetReachable) {
+                fetchData(setLatestReading, setSummaries);
+            }
+        });
     }, []);
 
     return (
@@ -85,12 +78,15 @@ const Home = () => {
                             control={latestReading ? latestReading.control : null}
                         />
                     </View>
-                    <View className="flex-1">
-                        <FilterStatusCard percent={latestReading ? latestReading.percent : null} />
-                    </View>
                 </View>
                 <View className="mt-[8%]">
-                    <QualityCard label="Kualitas Air" level={5} isButton />
+                    <QualityCard
+                        label="Kualitas Air"
+                        level={
+                            latestReading === null ? null : percentToLevel(latestReading!.percent)
+                        }
+                        isButton
+                    />
                 </View>
                 <View className="mt-[14%]">
                     <PumpDurationChart summaries={summaries} />
