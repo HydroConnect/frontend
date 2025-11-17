@@ -1,7 +1,7 @@
 import React from "react";
 import { createShimmerPlaceholder } from "react-native-shimmer-placeholder";
 import { LinearGradient } from "expo-linear-gradient";
-import { View, useWindowDimensions, type DimensionValue } from "react-native";
+import { useWindowDimensions, type DimensionValue } from "react-native";
 
 const BaseShimmer = createShimmerPlaceholder(LinearGradient);
 
