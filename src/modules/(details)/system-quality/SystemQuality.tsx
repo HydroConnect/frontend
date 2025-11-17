@@ -7,7 +7,7 @@ import Entypo from "@expo/vector-icons/Entypo";
 import PumpingStatusCard from "@/src/components/PumpingStatusCard";
 import SensorStatusCard from "./components/SensorStatusCard";
 import type { iReadings } from "@/schemas/readings";
-import { getLatest } from "@/lib/rest";
+import { fetchData, prefetch } from "@/lib/rest";
 
 const SystemQuality = () => {
     const router = useRouter();
@@ -16,23 +16,17 @@ const SystemQuality = () => {
     const [latestReading, setLatestReading] = useState<iReadings | null>(null);
     const [refreshing, setRefreshing] = useState(false);
 
-    const fetchData = async () => {
-        const data = await getLatest();
-        if (!(data instanceof Error)) {
-            setLatestReading(data);
-        } else {
-            console.log("Error Occured!");
-        }
-    };
-
     const onRefresh = async () => {
         setRefreshing(true);
-        await fetchData();
+        await prefetch(setLatestReading, null);
+        await fetchData(setLatestReading, null);
         setRefreshing(false);
     };
 
     useEffect(() => {
-        fetchData();
+        prefetch(setLatestReading, null).then(() => {
+            fetchData(setLatestReading, null);
+        });
     }, []);
 
     return (
