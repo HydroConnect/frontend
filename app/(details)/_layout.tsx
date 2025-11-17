@@ -8,7 +8,7 @@ const Layout = () => {
 
     return (
         <View className="flex-1">
-            <View
+            {/* <View
                 className="absolute top-0 left-0 right-0 bg-white z-0"
                 style={{ height: insets.top }}
             />
@@ -16,9 +16,14 @@ const Layout = () => {
             <View
                 className="absolute bottom-0 left-0 right-0 bg-black z-0"
                 style={{ height: insets.bottom }}
-            />
+            /> */}
 
-            <Stack screenOptions={{ headerShown: false }}>
+            <Stack
+                screenOptions={{
+                    headerShown: false,
+                    animation: "slide_from_right",
+                    animationDuration: 100,
+                }}>
                 <Stack.Screen name="about-us" options={{ headerShown: false }} />
                 <Stack.Screen name="system-quality" options={{ headerShown: false }} />
                 <Stack.Screen name="water-quality" options={{ headerShown: false }} />

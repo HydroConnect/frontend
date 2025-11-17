@@ -3,6 +3,7 @@ import React from "react";
 import { Typography } from "@/src/components/Typography";
 import { StatusPill } from "@/src/components/StatusPill";
 import { Ionicons } from "@expo/vector-icons";
+import { CardShimmer } from "@/src/components/Shimmer";
 
 type CardStatus = "full" | "half" | "empty";
 
@@ -39,7 +40,7 @@ const FilterStatusCard: React.FC<{ percent: number | null; [key: string]: unknow
     percent,
 }) => {
     if (percent === null) {
-        return <View></View>;
+        return <CardShimmer variant="half" />;
     }
 
     let status: CardStatus;

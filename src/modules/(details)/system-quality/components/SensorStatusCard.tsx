@@ -2,6 +2,7 @@ import { View, Pressable } from "react-native";
 import React from "react";
 import { Typography } from "@/src/components/Typography";
 import { StatusPill } from "@/src/components/StatusPill"; // Impor StatusPill global-mu
+import { CardShimmer } from "@/src/components/Shimmer";
 import { Ionicons } from "@expo/vector-icons";
 
 type SensorStatus = "safe" | "danger";
@@ -14,7 +15,7 @@ interface SensorStatusCardProps {
 const SensorStatusCard: React.FC<SensorStatusCardProps> = ({ title, controlValue }) => {
     // Tentukan variant pill berdasarkan status
     if (controlValue === null) {
-        return <View></View>;
+        return <CardShimmer />;
     }
     const status: SensorStatus = controlValue ? "safe" : "danger";
     const pillVariant = status === "safe" ? "ok" : "warn";

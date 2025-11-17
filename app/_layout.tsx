@@ -35,7 +35,11 @@ export default function RootLayout() {
     return (
         <SafeAreaProvider>
             <View style={{ "--rem": baseRem } as any} className="flex-1">
-                <Stack>
+                <Stack
+                    screenOptions={{
+                        animation: "slide_from_right",
+                        animationDuration: 100,
+                    }}>
                     <Stack.Screen name="index" options={{ headerShown: false }} />
                     <Stack.Screen name="ApiTest" options={{ headerShown: false }} />
                     <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
