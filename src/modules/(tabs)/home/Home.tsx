@@ -48,7 +48,7 @@ const Home = () => {
                     }
                     setReading(readings);
 
-                    globals.GSummaries![0]!.uptime += IOT_INTERVAL_MS;
+                    globals.GSummaries![0]!.uptime += IOT_INTERVAL_MS / 1000;
                     setSummaries([...globals.GSummaries!]); // Must be expanded to avoid memoization
                     AsyncStorage.setItem("summaries", JSON.stringify(globals.GSummaries));
 
