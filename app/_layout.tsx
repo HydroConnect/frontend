@@ -1,15 +1,16 @@
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack } from "expo-router";
 import { useEffect, useState } from "react";
-import { View, Dimensions, Platform } from "react-native";
+import { View, Dimensions, Platform, useWindowDimensions } from "react-native";
 import * as NavigationBar from "expo-navigation-bar";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
 import "./globals.css";
 import { ReadingCTX } from "@/lib/contexts/readingCTX";
 import { SummariesCTX } from "@/lib/contexts/summariesCTX";
 import type { iReadings } from "@/schemas/readings";
 import type { iSummaries } from "@/schemas/summaries";
 import { ConnectionCTX } from "@/lib/contexts/connectionCTX";
+import { ToastStack } from "@/src/components/ToastStack";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -57,6 +58,7 @@ export default function RootLayout() {
                                 <Stack.Screen name="onboarding" options={{ headerShown: false }} />
                                 <Stack.Screen name="(details)" options={{ headerShown: false }} />
                             </Stack>
+                            <ToastStack />
                         </View>
                     </ReadingCTX>
                 </SummariesCTX>
