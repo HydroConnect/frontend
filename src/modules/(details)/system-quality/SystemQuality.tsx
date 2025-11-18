@@ -1,5 +1,6 @@
+import React, { useContext, useEffect, useState } from "react";
+// 👇 Pastikan import ScrollView ada lagi
 import { View, ScrollView, useWindowDimensions, Text } from "react-native";
-import React, { useContext, useEffect } from "react";
 import { Typography } from "@/src/components/Typography";
 import Button from "@/src/components/Button";
 import { useRouter } from "expo-router";
@@ -10,11 +11,17 @@ import { fetchData } from "@/lib/rest";
 import { ReadingCTX } from "@/lib/contexts/readingCTX";
 import { RefreshableScreen } from "@/src/components/RefreshableScreen";
 import { ConnectionCTX } from "@/lib/contexts/connectionCTX";
+import RangeSelectionModal from "./components/CSVModal";
 
 const SystemQuality = () => {
+    const [isRangeModalVisible, setRangeModalVisible] = useState(false);
+    const handleSelectRange = (endDate: Date, rangeType: "week" | "month" | "year") => {
+        console.log("Waktu Akhir Dipilih:", endDate);
+        console.log("Range Dipilih:", rangeType);
+    };
     const router = useRouter();
     const { height } = useWindowDimensions();
-    const navbarPadding = height * 0.1; // 10% dari tinggi layar, lebih responsif
+    const navbarPadding = height * 0.1 + 100;
 
     const { reading, setReading } = useContext(ReadingCTX)!;
     const { connection } = useContext(ConnectionCTX)!;
@@ -34,6 +41,7 @@ const SystemQuality = () => {
                         <Text>Pemantauan Sistem</Text>{" "}
                         {connection ? <Text>(Connected)</Text> : <Text>(Disconnected)</Text>}
                     </Typography>
+
                     <View className="flex flex-col items-center justify-center gap-[5%] mx-2">
                         <PumpingStatusCard reading={reading} />
                         <SensorStatusCard
@@ -77,20 +85,35 @@ const SystemQuality = () => {
                             title="Tanki"
                         />
                     </View>
-                    <View className="flex items-center justify-center">
+
+                    <View className="mx-2 mt-[20%]">
+                        <Button
+                            label="Impor Data CSV"
+                            variant="secondary"
+                            onPress={() => setRangeModalVisible(true)}
+                            className="w-full mx-auto mt-[10%]"
+                            textVariant="h3"
+                            isIcon={false}
+                        />
+
                         <Button
                             label="Kembali"
                             variant="primary"
                             onPress={() => {
                                 router.back();
                             }}
-                            className="w-[75%] mt-[10%]"
+                            className="w-full mx-auto mt-[10%] mb-[10%]"
                             textVariant="h3"
                             iconPosition="left"
                             icon={(props) => <Entypo name="chevron-left" size={25} color="white" />}
                         />
                     </View>
                 </ScrollView>
+                <RangeSelectionModal
+                    visible={isRangeModalVisible}
+                    onClose={() => setRangeModalVisible(false)}
+                    onSelectRange={handleSelectRange}
+                />
             </View>
         </RefreshableScreen>
     );

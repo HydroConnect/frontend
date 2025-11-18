@@ -11,6 +11,8 @@ import type { iReadings } from "@/schemas/readings";
 import type { iSummaries } from "@/schemas/summaries";
 import { ConnectionCTX } from "@/lib/contexts/connectionCTX";
 import { ToastStack } from "@/src/components/ToastStack";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -43,26 +45,45 @@ export default function RootLayout() {
 
     return (
         <SafeAreaProvider>
-            <ConnectionCTX value={{ connection: connection, setConnection: setConnection }}>
-                <SummariesCTX value={{ summaries: summaries, setSummaries: setSummaries }}>
-                    <ReadingCTX value={{ reading: reading, setReading: setReading }}>
-                        <View style={{ "--rem": baseRem } as any} className="flex-1">
-                            <Stack
-                                screenOptions={{
-                                    animation: "slide_from_right",
-                                    animationDuration: 100,
-                                }}>
-                                <Stack.Screen name="index" options={{ headerShown: false }} />
-                                <Stack.Screen name="ApiTest" options={{ headerShown: false }} />
-                                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                                <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-                                <Stack.Screen name="(details)" options={{ headerShown: false }} />
-                            </Stack>
-                            <ToastStack />
-                        </View>
-                    </ReadingCTX>
-                </SummariesCTX>
-            </ConnectionCTX>
+            <GestureHandlerRootView style={{ flex: 1 }}>
+                <BottomSheetModalProvider>
+                    <ConnectionCTX value={{ connection: connection, setConnection: setConnection }}>
+                        <SummariesCTX value={{ summaries: summaries, setSummaries: setSummaries }}>
+                            <ReadingCTX value={{ reading: reading, setReading: setReading }}>
+                                <View style={{ "--rem": baseRem } as any} className="flex-1">
+                                    <Stack
+                                        screenOptions={{
+                                            animation: "slide_from_right",
+                                            animationDuration: 100,
+                                        }}>
+                                        <Stack.Screen
+                                            name="index"
+                                            options={{ headerShown: false }}
+                                        />
+                                        <Stack.Screen
+                                            name="ApiTest"
+                                            options={{ headerShown: false }}
+                                        />
+                                        <Stack.Screen
+                                            name="(tabs)"
+                                            options={{ headerShown: false }}
+                                        />
+                                        <Stack.Screen
+                                            name="onboarding"
+                                            options={{ headerShown: false }}
+                                        />
+                                        <Stack.Screen
+                                            name="(details)"
+                                            options={{ headerShown: false }}
+                                        />
+                                    </Stack>
+                                    <ToastStack />
+                                </View>
+                            </ReadingCTX>
+                        </SummariesCTX>
+                    </ConnectionCTX>
+                </BottomSheetModalProvider>
+            </GestureHandlerRootView>
         </SafeAreaProvider>
     );
 }
