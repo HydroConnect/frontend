@@ -57,8 +57,6 @@ export function connectAndListen(
     readingsHandler: (readings: iReadings) => void,
     IOErrorHandler: (err: Error) => void = errorHandler
 ) {
-    console.log("Connecting!");
-
     if (socket !== null) {
         disconnect();
     }

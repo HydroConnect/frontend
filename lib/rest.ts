@@ -5,6 +5,7 @@ import type { iReadings } from "@/schemas/readings";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { globals } from "./globals";
 import NetInfo from "@react-native-community/netinfo";
+import { toastError } from "@/src/components/ToastStack";
 
 /**
  * @description Get last 7 days summaries
@@ -89,7 +90,6 @@ export async function fetchData(
             setLatestReading(readingData);
         }
     } else {
-        console.log("Error fetching latest reading");
         isSuccess = false;
         NetInfo.refresh();
     }
@@ -101,11 +101,12 @@ export async function fetchData(
             setSummaries(summariesData);
         }
     } else {
-        console.log("Error fetching summaries");
         isSuccess = false;
         NetInfo.refresh();
     }
     if (isSuccess) {
         globals.GLastFetch = new Date();
+    } else {
+        toastError({message:"Error fetching"});
     }
 }

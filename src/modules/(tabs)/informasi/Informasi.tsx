@@ -10,6 +10,7 @@ import LogoAirMati from "@/assets/images/informasi/LogoAirMati";
 import LogoAirNyala from "@/assets/images/informasi/LogoAirNyala";
 import { debounce } from "@/lib/utils";
 import { RefreshableScreen } from "@/src/components/RefreshableScreen";
+import PageTitle from "@/src/components/PageTitle";
 
 const Informasi = () => {
     const { height } = useWindowDimensions();
@@ -37,10 +38,7 @@ const Informasi = () => {
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={{ paddingBottom: navbarPadding }} // Responsif berdasarkan tinggi layar
                 >
-                    <Typography variant="h3" weight="semibold" className="mb-[15%]">
-                        Informasi
-                    </Typography>
-
+                    <PageTitle title="Informasi" className={"mb-[45px]"} />
                     {/* Info Section */}
                     <View className="mb-[5%]">
                         {/* Pemantauan Sistem Button */}
