@@ -7,10 +7,10 @@ interface StatusPillProps {
     text: string;
     // 1. Tambahkan variant 'default'
     variant: "ok" | "warn" | "default";
+    className?: string;
 }
 
-export const StatusPill: React.FC<StatusPillProps> = ({ text, variant }) => {
-
+export const StatusPill: React.FC<StatusPillProps> = ({ text, variant, className }) => {
     let bgColor = "bg-white";
     let textColor = "text-green-600";
     let icon: string | null = null; // 2. Bikin 'icon' jadi opsional (bisa null)
@@ -27,11 +27,9 @@ export const StatusPill: React.FC<StatusPillProps> = ({ text, variant }) => {
         textColor = "text-green-600";
     }
 
-    const borderColor = "border-neutral-300";
-
     return (
         <View
-            className={`flex-row items-center justify-center ${bgColor} px-4 py-2 rounded-full border ${borderColor} shadow-sm`}>
+            className={`${className ?? ""} flex-row items-center justify-center ${bgColor} px-4 py-2 rounded-full border-[1px] border-gray-500 border-solid shadow-sm`}>
             {/* 4. Render emoji HANYA JIKA 'icon' TIDAK NULL */}
             {icon && (
                 <Typography variant="label" className="mr-2">

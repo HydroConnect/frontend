@@ -1,6 +1,5 @@
-import { View, ScrollView, useWindowDimensions, Text } from "react-native";
+import { View, ScrollView, useWindowDimensions } from "react-native";
 import React, { useContext, useEffect } from "react";
-import { Typography } from "@/src/components/Typography";
 import Button from "@/src/components/Button";
 import { useRouter } from "expo-router";
 import Entypo from "@expo/vector-icons/Entypo";
@@ -9,7 +8,7 @@ import SensorStatusCard from "./components/SensorStatusCard";
 import { fetchData } from "@/lib/rest";
 import { ReadingCTX } from "@/lib/contexts/readingCTX";
 import { RefreshableScreen } from "@/src/components/RefreshableScreen";
-import { ConnectionCTX } from "@/lib/contexts/connectionCTX";
+import PageTitle from "@/src/components/PageTitle";
 
 const SystemQuality = () => {
     const router = useRouter();
@@ -17,7 +16,6 @@ const SystemQuality = () => {
     const navbarPadding = height * 0.1; // 10% dari tinggi layar, lebih responsif
 
     const { reading, setReading } = useContext(ReadingCTX)!;
-    const { connection } = useContext(ConnectionCTX)!;
 
     useEffect(() => {
         fetchData(setReading, null);
@@ -30,10 +28,7 @@ const SystemQuality = () => {
                     className="flex-1 pt-[5%] px-[8%]"
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={{ paddingBottom: navbarPadding }}>
-                    <Typography variant="h3" weight="semibold" className="pb-[15%]">
-                        <Text>Pemantauan Sistem</Text>{" "}
-                        {connection ? <Text>(Connected)</Text> : <Text>(Disconnected)</Text>}
-                    </Typography>
+                    <PageTitle title="Status Sistem" className="mb-[45px]" />
                     <View className="flex flex-col items-center justify-center gap-[5%] mx-2">
                         <PumpingStatusCard reading={reading} />
                         <SensorStatusCard
