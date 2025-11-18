@@ -3,6 +3,7 @@ import React from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import { Typography } from "@/src/components/Typography";
 import BoxVideo from "./components/boxVideo";
+import { RefreshableScreen } from "@/src/components/RefreshableScreen";
 
 const Panduan = () => {
     const { height } = useWindowDimensions();
@@ -33,42 +34,44 @@ const Panduan = () => {
     ];
 
     return (
-        <View className="flex-1 bg-white">
-            <LinearGradient
-                colors={["#E0EEE6", "#FFFFFF"]}
-                style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: "25%",
-                    width: "100%",
-                }}
-            />
+        <RefreshableScreen>
+            <View className="flex-1 bg-white">
+                <LinearGradient
+                    colors={["#E0EEE6", "#FFFFFF"]}
+                    style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: "25%",
+                        width: "100%",
+                    }}
+                />
 
-            <ScrollView
-                className="flex-1 pt-[5%] px-[8%]"
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: navbarPadding }}>
-                {/* Header */}
-                <Typography variant="h3" weight="semibold" className="mb-[15%]">
-                    Panduan
-                </Typography>
+                <ScrollView
+                    className="flex-1 pt-[5%] px-[8%]"
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={{ paddingBottom: navbarPadding }}>
+                    {/* Header */}
+                    <Typography variant="h3" weight="semibold" className="mb-[15%]">
+                        Panduan
+                    </Typography>
 
-                {/* Video Boxes Container */}
-                <View style={{ gap: 24 }}>
-                    {panduanData.map((item) => (
-                        <BoxVideo
-                            key={item.id}
-                            title={item.title}
-                            videoUrl={item.videoUrl}
-                            thumbnailUrl={item.thumbnailUrl}
-                            steps={item.steps}
-                        />
-                    ))}
-                </View>
-            </ScrollView>
-        </View>
+                    {/* Video Boxes Container */}
+                    <View style={{ gap: 24 }}>
+                        {panduanData.map((item) => (
+                            <BoxVideo
+                                key={item.id}
+                                title={item.title}
+                                videoUrl={item.videoUrl}
+                                thumbnailUrl={item.thumbnailUrl}
+                                steps={item.steps}
+                            />
+                        ))}
+                    </View>
+                </ScrollView>
+            </View>
+        </RefreshableScreen>
     );
 };
 
