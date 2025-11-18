@@ -42,17 +42,17 @@ const WaterQuality = () => {
                                     ? null
                                     : percentToLevel(scoreTurbidity(reading!.turbidity))
                             }
-                            customPillText="90%"
+                            customPillText={`PPM ${reading === null ? null : reading!.turbidity}`}
                         />
                         <QualityCard
                             label="Keasaman"
                             level={reading === null ? null : percentToLevel(scorePH(reading!.pH))}
-                            customPillText="pH 2"
+                            customPillText={`pH ${reading === null ? null : reading!.pH}`}
                         />
                         <QualityCard
                             label="Kekeruhan"
                             level={reading === null ? null : percentToLevel(scoreTDS(reading!.tds))}
-                            customPillText="90%"
+                            customPillText={`${reading === null ? 0 : reading!.tds} NTU`}
                         />
                         <QualityCard label="Suhu" level={reading === null ? null : 5} />
                     </View>

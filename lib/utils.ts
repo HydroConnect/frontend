@@ -37,3 +37,7 @@ export function debounce(state: any, fun: (...args: any[]) => any, timeout: numb
 export function round(num: number, precision: number) {
     return Math.round(num * 10 ** precision) / 10 ** precision;
 }
+
+export function getHourMinute(num: number) {
+    return [Math.floor(num), Math.round(num*60) % 60];
+}
