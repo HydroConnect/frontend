@@ -44,7 +44,7 @@ export async function getLatest(): Promise<iReadings | Error> {
     }
 }
 
-export async function prefetch(
+async function prefetch(
     setLatestReading: ((...args: any[]) => any) | null,
     setSummaries: ((...args: any[]) => any) | null
 ) {
@@ -71,6 +71,8 @@ export async function fetchData(
     setLatestReading: ((...args: any[]) => any) | null,
     setSummaries: ((...args: any[]) => any) | null
 ) {
+    await prefetch(setLatestReading, setSummaries);
+
     if (
         globals.GLastFetch !== null &&
         Date.now() - globals.GLastFetch.getTime() <= FETCH_REST_TIME_MS
@@ -94,7 +96,7 @@ export async function fetchData(
 
     if (!(summariesData instanceof Error)) {
         globals.GSummaries = summariesData;
-        await AsyncStorage.setItem("reading", JSON.stringify(readingData));
+        await AsyncStorage.setItem("summaries", JSON.stringify(summariesData));
         if (setSummaries !== null) {
             setSummaries(summariesData);
         }

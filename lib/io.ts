@@ -31,11 +31,11 @@ export function isConnected(): boolean {
 }
 
 function handleLostConnection(disconnectHandler: () => void) {
+    disconnectHandler();
     if (!socket!.active) {
         socket!.disconnect();
         setIsDownloading(false);
         socket = undefined;
-        disconnectHandler();
     }
 }
 
@@ -59,6 +59,9 @@ export function connectAndListen(
 ) {
     console.log("Connecting!");
 
+    if (socket !== null) {
+        disconnect();
+    }
     socket = io(`${BACKEND_API_BASE_URL}/io/${BACKEND_API_IO_VERSION}`);
     socket!.on("connect", () => {
         connectHandler();
@@ -67,6 +70,9 @@ export function connectAndListen(
         handleLostConnection(disconnectHandler);
     });
     socket!.on("connect_error", () => {
+        handleLostConnection(disconnectHandler);
+    });
+    socket!.io.on("reconnect_failed", () => {
         handleLostConnection(disconnectHandler);
     });
     socket!.on("error", (err: Error) => {
@@ -119,13 +125,14 @@ export function _startDownload(
 }
 
 /**
- * @description Disconnect socket.io from server
+ * @description Disconnect socket.io from server (This also clear all EventListener)
  * @returns {undefined | Error} Error if is not connected from beginning
  */
 export function disconnect(): undefined | Error {
     if (socket === undefined) {
         return new IOError(IOErrorEnum.NotConnected);
     }
+    socket!.off();
     socket!.disconnect();
     socket = undefined;
 }
