@@ -1,6 +1,5 @@
-import { Typography } from "@/src/components/Typography";
 import React, { useContext, useEffect } from "react";
-import { View, ScrollView, useWindowDimensions, Text } from "react-native";
+import { View, ScrollView, useWindowDimensions } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import StatusCard from "./components/StatusCard";
 import PumpingStatusCard from "../../../components/PumpingStatusCard";

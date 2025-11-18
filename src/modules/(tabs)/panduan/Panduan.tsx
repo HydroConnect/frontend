@@ -1,7 +1,6 @@
 import { View, ScrollView, useWindowDimensions } from "react-native";
 import React from "react";
 import { LinearGradient } from "expo-linear-gradient";
-import { Typography } from "@/src/components/Typography";
 import BoxVideo from "./components/boxVideo";
 import { RefreshableScreen } from "@/src/components/RefreshableScreen";
 import PageTitle from "@/src/components/PageTitle";

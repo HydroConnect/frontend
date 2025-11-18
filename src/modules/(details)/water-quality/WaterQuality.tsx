@@ -1,6 +1,5 @@
-import { View, ScrollView, useWindowDimensions, Text } from "react-native";
+import { View, ScrollView, useWindowDimensions } from "react-native";
 import React, { useContext, useEffect } from "react";
-import { Typography } from "@/src/components/Typography";
 import QualityCard from "@/src/components/QualityCard";
 import Button from "@/src/components/Button";
 import { useRouter } from "expo-router";
@@ -9,13 +8,11 @@ import { fetchData } from "@/lib/rest";
 import { percentToLevel, scorePH, scoreTDS, scoreTurbidity } from "@/lib/chemFormula";
 import { ReadingCTX } from "@/lib/contexts/readingCTX";
 import { RefreshableScreen } from "@/src/components/RefreshableScreen";
-import { ConnectionCTX } from "@/lib/contexts/connectionCTX";
 import SuhuCard from "./components/SuhuCard";
 import PageTitle from "@/src/components/PageTitle";
 
 const WaterQuality = () => {
     const { reading, setReading } = useContext(ReadingCTX)!;
-    const { connection } = useContext(ConnectionCTX)!;
 
     const router = useRouter();
     const { height } = useWindowDimensions();
