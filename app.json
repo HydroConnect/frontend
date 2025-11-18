@@ -1,60 +1,61 @@
 {
-  "expo": {
-    "name": "HydroConnect",
-    "slug": "fe",
-    "version": "1.0.0",
-    "runtimeVersion": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/images/icon-hc.png",
-    "scheme": "hydroconnect",
-    "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
-    "ios": {
-      "bundleIdentifier": "com.hydroconnect.app",
-      "supportsTablet": true
-    },
-    "android": {
-      "package": "com.hydroconnect.app",
-      "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
-      },
-      "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
-    },
-    "plugins": [
-      "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
-          "dark": {
-            "backgroundColor": "#000000"
-          }
+    "expo": {
+        "name": "HydroConnect",
+        "slug": "fe",
+        "version": "1.0.0",
+        "runtimeVersion": "1.0.0",
+        "orientation": "portrait",
+        "icon": "./assets/images/icon-hc.png",
+        "scheme": "hydroconnect",
+        "userInterfaceStyle": "automatic",
+        "newArchEnabled": true,
+        "ios": {
+            "bundleIdentifier": "com.hydroconnect.app",
+            "supportsTablet": true
+        },
+        "android": {
+            "package": "com.hydroconnect.app",
+            "adaptiveIcon": {
+                "backgroundColor": "#E6F4FE",
+                "foregroundImage": "./assets/images/android-icon-foreground.png",
+                "backgroundImage": "./assets/images/android-icon-background.png",
+                "monochromeImage": "./assets/images/android-icon-monochrome.png"
+            },
+            "edgeToEdgeEnabled": true,
+            "predictiveBackGestureEnabled": false
+        },
+        "web": {
+            "bundler": "metro",
+            "output": "static",
+            "favicon": "./assets/images/favicon.png"
+        },
+        "plugins": [
+            "expo-notifications",
+            "expo-router",
+            [
+                "expo-splash-screen",
+                {
+                    "image": "./assets/images/splash-icon.png",
+                    "imageWidth": 200,
+                    "resizeMode": "contain",
+                    "backgroundColor": "#ffffff",
+                    "dark": {
+                        "backgroundColor": "#000000"
+                    }
+                }
+            ],
+            "expo-font",
+            "expo-web-browser"
+        ],
+        "experiments": {
+            "typedRoutes": true,
+            "reactCompiler": true
+        },
+        "extra": {
+            "router": {},
+            "eas": {
+                "projectId": "983010ea-c49f-461f-be4d-c0d1fa8a684e"
+            }
         }
-      ],
-      "expo-font",
-      "expo-web-browser"
-    ],
-    "experiments": {
-      "typedRoutes": true,
-      "reactCompiler": true
-    },
-    "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "983010ea-c49f-461f-be4d-c0d1fa8a684e"
-      }
     }
-  }
 }

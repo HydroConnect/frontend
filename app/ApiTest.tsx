@@ -6,21 +6,50 @@ import type { iReadings } from "@/schemas/readings";
 import { type iSummaries } from "@/schemas/summaries";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Link } from "expo-router";
-import { useState } from "react";
-import { Button, FlatList, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Button, FlatList, ScrollView, Text, View } from "react-native";
+import * as Notifications from "expo-notifications";
+import { registerForPushNotificationsAsync, sendPushNotification } from "@/lib/notifications";
 
 const ApiTest = () => {
     const [log, setLog] = useState<any>();
     const [summary, setSummary] = useState<iSummaries[] | null>(null);
+    const [expoPushToken, setExpoPushToken] = useState("");
+    const [notification, setNotification] = useState<Notifications.Notification | undefined>(
+        undefined
+    );
 
     function print(input: any) {
         console.log(input);
         setLog(JSON.stringify(input));
     }
 
+    useEffect(() => {
+        registerForPushNotificationsAsync()
+            .then((token) => setExpoPushToken(token ?? ""))
+            .catch((error: any) => setExpoPushToken(`${error}`));
+
+        const notificationListener = Notifications.addNotificationReceivedListener(
+            (notification) => {
+                setNotification(notification);
+            }
+        );
+
+        const responseListener = Notifications.addNotificationResponseReceivedListener(
+            (response) => {
+                console.log(response);
+            }
+        );
+
+        return () => {
+            notificationListener.remove();
+            responseListener.remove();
+        };
+    }, []);
+
     return (
         <View className="flex w-[100%] h-[100%] relative justify-center items-center">
-            <View className="relative w-max h-maxflex items-center justify-center">
+            <ScrollView className="relative w-max h-maxflex items-center justify-center">
                 <View>
                     <Link href={"/"} push asChild>
                         <Text className="font-bold">Back</Text>
@@ -126,7 +155,24 @@ const ApiTest = () => {
                         }}
                     />
                 </View>
-            </View>
+                <View style={{ flex: 1, alignItems: "center", justifyContent: "space-around" }}>
+                    <Text>Your Expo push token: {expoPushToken}</Text>
+                    <View style={{ alignItems: "center", justifyContent: "center" }}>
+                        <Text>Title: {notification && notification.request.content.title} </Text>
+                        <Text>Body: {notification && notification.request.content.body}</Text>
+                        <Text>
+                            Data:{" "}
+                            {notification && JSON.stringify(notification.request.content.data)}
+                        </Text>
+                    </View>
+                    <Button
+                        title="Press to Send Notification"
+                        onPress={async () => {
+                            await sendPushNotification(expoPushToken);
+                        }}
+                    />
+                </View>
+            </ScrollView>
         </View>
     );
 };
