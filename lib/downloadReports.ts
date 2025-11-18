@@ -12,6 +12,7 @@ import {
     IOErrorEnum,
 } from "./errorHandler";
 import { MAX_DOWNLOAD_ID_LENGTH } from "./constants";
+import { toastInfo, toastSuccess } from "@/src/components/ToastStack";
 
 function encode(str: string): Uint8Array {
     return new TextEncoder().encode(str);
@@ -70,7 +71,7 @@ export async function downloadReports(
         });
     }
 
-    console.log("Starting Download!");
+    toastInfo({message: "Starting Download!"});
 
     let dirUri = "";
     if (progress === null) {
@@ -123,13 +124,10 @@ export async function downloadReports(
             const lastWritten = readings[readings.length - 1]!.timestamp;
             progress!.lastWritten = lastWritten;
 
-            console.log(lastWritten);
-
             await AsyncStorage.setItem("download-progress", JSON.stringify(progress));
         },
         async (downloadId: string) => {
-            console.log("Download for " + downloadId + " is finished!");
-
+            toastSuccess({message: "Download for " + downloadId + " is finished!"});
             await writer.close();
             setIsDownloading(false);
             const resp = await mergeDownloads(progress, dirUri);
@@ -225,5 +223,5 @@ async function mergeDownloads(
 
     await writer.close();
 
-    console.log("Finish Merging!");
+    toastSuccess({message: "Finish Merging!"});
 }

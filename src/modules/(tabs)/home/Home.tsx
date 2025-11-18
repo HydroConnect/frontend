@@ -19,6 +19,7 @@ import { IOT_INTERVAL_MS, ON_OFF_THRESHOLD_MS } from "@/lib/constants";
 import { globals } from "@/lib/globals";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import PageTitle from "@/src/components/PageTitle";
+import { toastError, toastInfo } from "@/src/components/ToastStack";
 
 let timeout: null | number = null;
 
@@ -34,7 +35,9 @@ const Home = () => {
         function nowConnectAndListen() {
             connectAndListen(
                 () => {
+                    fetchData(setReading, setSummaries);
                     setConnection(true);
+                    toastInfo({ message: "Connected!" });
                     timeout = setTimeout(async () => {
                         await fetchData(setReading, null);
                     }, ON_OFF_THRESHOLD_MS);
@@ -62,7 +65,6 @@ const Home = () => {
         fetchData(setReading, setSummaries);
         NetInfo.addEventListener((state) => {
             if (state.isInternetReachable === true) {
-                fetchData(setReading, setSummaries);
                 if (!connection) {
                     nowConnectAndListen();
                 }
