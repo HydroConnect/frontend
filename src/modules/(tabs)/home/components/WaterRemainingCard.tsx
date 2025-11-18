@@ -38,7 +38,7 @@ const statusConfig: Record<
     empty: {
         pillVariant: "warn",
         pillText: "Habis",
-        segment1Class: "bg-yellow-100",
+        segment1Class: "bg-blue-50",
         segment2Class: "bg-blue-50",
     },
 };

@@ -48,3 +48,7 @@ export async function isFirstTime(): Promise<boolean> {
     }
     return false;
 }
+
+export function getHourMinute(num: number) {
+    return [Math.floor(num), Math.round(num*60) % 60];
+}
