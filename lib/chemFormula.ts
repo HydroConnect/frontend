@@ -7,7 +7,7 @@ interface RangeGroup {
 }
 
 export type Level = 1 | 2 | 3 | 4 | 5;
-const levelThreshold = [100, 85, 66, 50, 10, 0];
+const levelThreshold = [0, 10, 50, 66, 85, 100];
 
 const pHRange: RangeGroup = {
     ideal: [[7, 7.5]],
