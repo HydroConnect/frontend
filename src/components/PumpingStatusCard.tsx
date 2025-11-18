@@ -14,7 +14,7 @@ const PumpingStatusCard: React.FC<{ reading: iReadings | null; [key: string]: un
         return <CardShimmer />;
     }
     if (
-        Date.now() - new Date(reading.timestamp).getTime() <=
+        new Date().getTime() - new Date(reading.timestamp).getTime() <=
         ON_OFF_THRESHOLD_MS - ON_OFF_THRESHOLD_ERROR_MS
     ) {
         return (
