@@ -6,7 +6,7 @@ import GreenWave from "@/assets/images/home/GreenWave";
 import YellowWave from "@/assets/images/home/YellowWave";
 import BlueWave from "@/assets/images/home/BlueWave";
 
-type StatusType = "safe" | "empty" | "dirty";
+type StatusType = "safe" | "empty" | "dirty" | "both";
 
 interface StatusCardProps {
     status: StatusType;
@@ -29,7 +29,6 @@ const statusConfig: Record<
         WaveComponent: BlueWave,
         pills: [
             { text: "Air Tersedia", variant: "ok" },
-            { text: "Filter Aman", variant: "ok" },
             { text: "Kualitas Air Aman", variant: "ok" },
         ],
     },
@@ -40,7 +39,6 @@ const statusConfig: Record<
         WaveComponent: GreenWave,
         pills: [
             { text: "Air Tersedia", variant: "ok" },
-            { text: "Filter Kotor", variant: "warn" },
             { text: "Air Kotor", variant: "warn" },
         ],
     },
@@ -51,8 +49,17 @@ const statusConfig: Record<
         WaveComponent: YellowWave,
         pills: [
             { text: "Air Hampir Habis", variant: "warn" },
-            { text: "Filter Aman", variant: "ok" },
             { text: "Kualitas Air Aman", variant: "ok" },
+        ],
+    },
+    both: {
+        title: "Air Habis, Perlu Tindakan",
+        bgColor: "bg-yellow-150",
+        titleColor: "text-black",
+        WaveComponent: YellowWave,
+        pills: [
+            { text: "Air Hampir Habis", variant: "warn" },
+            { text: "Air Kotor", variant: "warn" },
         ],
     },
 };
@@ -74,13 +81,15 @@ const StatusCard: React.FC<StatusCardProps> = ({ status }) => {
     });
 
     return (
-        <View className={`rounded-3xl overflow-hidden ${bgColor}`} style={shadowStyle}>
+        <View
+            className={`rounded-3xl overflow-hidden ${bgColor} min-h-[200px]`}
+            style={shadowStyle}>
             <View className="p-4 z-10 flex flex-col items-center">
                 <Typography variant="h3" weight="semibold" className={titleColor}>
                     {title}
                 </Typography>
                 {/* Render Pills */}
-                <View className="mt-4 flex flex-col items-center justify-center gap-[0.45rem]">
+                <View className="mt-10 flex flex-col items-center justify-center gap-[0.45rem]">
                     {pills.map((pill, index) => (
                         <StatusPill key={index} text={pill.text} variant={pill.variant} />
                     ))}

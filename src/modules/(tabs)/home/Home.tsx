@@ -95,7 +95,7 @@ const Home = () => {
                         {connection ? <Text>(Connected)</Text> : <Text>(Disconnected)</Text>}
                     </Typography>
                     <View className="my-[15%]">
-                        <StatusCard status="safe" />
+                        <StatusCard status="both" />
                     </View>
                     <View className="mb-[5%]">
                         <PumpingStatusCard reading={reading} />

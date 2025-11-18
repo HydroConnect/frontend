@@ -12,6 +12,7 @@ interface QualityCardProps {
     label: string;
     level: null | Level;
     isButton?: boolean;
+    customPillText?: string; // Custom text untuk pill, override default "Aman"/"Bahaya"
 }
 
 const BAR_OK = "bg-blue-400";
@@ -22,7 +23,7 @@ const statusConfig: Record<
     Level,
     {
         pillVariant: "ok" | "warn";
-        pillText: string;
+        pillText: string | any;
         barSegments: string[];
     }
 > = {
@@ -58,12 +59,17 @@ const statusConfig: Record<
     },
 };
 
-const QualityCard: React.FC<QualityCardProps> = ({ level, label, isButton }) => {
+const QualityCard: React.FC<QualityCardProps> = ({ level, label, isButton, customPillText }) => {
     const router = useRouter();
     if (level === null) {
         return <CardShimmer />;
     }
     const { pillVariant, pillText, barSegments } = statusConfig[level];
+
+    // Gunakan customPillText jika ada, kalau tidak pakai default dari statusConfig
+    const displayPillText = customPillText || pillText;
+    // Jika ada customPillText, gunakan variant "default", kalau tidak pakai dari statusConfig
+    const displayPillVariant = customPillText ? "default" : pillVariant;
 
     const handleInfoPress = () => {
         console.log("Tombol info Kualitas Air ditekan");
@@ -83,7 +89,7 @@ const QualityCard: React.FC<QualityCardProps> = ({ level, label, isButton }) => 
                     <Pressable onPress={handleInfoPress}>
                         <Ionicons name="help-circle" size={30} color={"#7D9F8C"} />
                     </Pressable>
-                    <StatusPill variant={pillVariant} text={pillText} />
+                    <StatusPill variant={displayPillVariant} text={displayPillText} />
                 </View>
             </View>
             <View className="mt-4">

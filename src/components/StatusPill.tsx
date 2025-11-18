@@ -10,7 +10,6 @@ interface StatusPillProps {
 }
 
 export const StatusPill: React.FC<StatusPillProps> = ({ text, variant }) => {
-    // --- Tentukan style berdasarkan 'variant' ---
 
     let bgColor = "bg-white";
     let textColor = "text-green-600";
