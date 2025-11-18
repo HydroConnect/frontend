@@ -19,7 +19,7 @@ import { IOT_INTERVAL_MS, ON_OFF_THRESHOLD_MS } from "@/lib/constants";
 import { globals } from "@/lib/globals";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import PageTitle from "@/src/components/PageTitle";
-import { toastError, toastInfo } from "@/src/components/ToastStack";
+import { toastInfo } from "@/src/components/ToastStack";
 
 let timeout: null | number = null;
 
