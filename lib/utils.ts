@@ -1,3 +1,5 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 export function formatDate(date: Date): string {
     return new Intl.DateTimeFormat("id-ID", {
         weekday: "long",
@@ -36,4 +38,13 @@ export function debounce(state: any, fun: (...args: any[]) => any, timeout: numb
 
 export function round(num: number, precision: number) {
     return Math.round(num * 10 ** precision) / 10 ** precision;
+}
+
+export async function isFirstTime(): Promise<boolean> {
+    const firstTime = await AsyncStorage.getItem("isFirstTime");
+    if (firstTime === null) {
+        await AsyncStorage.setItem("isFirstTime", "true");
+        return true;
+    }
+    return false;
 }
