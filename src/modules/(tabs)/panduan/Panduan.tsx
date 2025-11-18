@@ -4,6 +4,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Typography } from "@/src/components/Typography";
 import BoxVideo from "./components/boxVideo";
 import { RefreshableScreen } from "@/src/components/RefreshableScreen";
+import PageTitle from "@/src/components/PageTitle";
 
 const Panduan = () => {
     const { height } = useWindowDimensions();
@@ -52,10 +53,7 @@ const Panduan = () => {
                     className="flex-1 pt-[5%] px-[8%]"
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={{ paddingBottom: navbarPadding }}>
-                    {/* Header */}
-                    <Typography variant="h3" weight="semibold" className="mb-[15%]">
-                        Panduan
-                    </Typography>
+                    <PageTitle title="Panduan" className="mb-[45px]" />
 
                     {/* Video Boxes Container */}
                     <View style={{ gap: 24 }}>

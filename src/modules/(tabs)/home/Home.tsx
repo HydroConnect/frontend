@@ -19,6 +19,7 @@ import type { iReadings } from "@/schemas/readings";
 import { IOT_INTERVAL_MS, ON_OFF_THRESHOLD_MS } from "@/lib/constants";
 import { globals } from "@/lib/globals";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import PageTitle from "@/src/components/PageTitle";
 
 let timeout: null | number = null;
 
@@ -90,10 +91,7 @@ const Home = () => {
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={{ paddingBottom: navbarPadding }} // Responsif berdasarkan tinggi layar
                 >
-                    <Typography variant="h3" weight="semibold">
-                        <Text>Hydroconnect </Text>
-                        {connection ? <Text>(Connected)</Text> : <Text>(Disconnected)</Text>}
-                    </Typography>
+                    <PageTitle title="Hydroconnect" />
                     <View className="my-[15%]">
                         <StatusCard reading={reading} />
                     </View>
