@@ -5,11 +5,13 @@ import { StatusPill } from "@/src/components/StatusPill";
 import GreenWave from "@/assets/images/home/GreenWave";
 import YellowWave from "@/assets/images/home/YellowWave";
 import BlueWave from "@/assets/images/home/BlueWave";
+import type { iReadings } from "@/schemas/readings";
+import { CardShimmer } from "@/src/components/Shimmer";
 
 type StatusType = "safe" | "empty" | "dirty" | "both";
 
 interface StatusCardProps {
-    status: StatusType;
+    reading: iReadings | null;
 }
 
 const statusConfig: Record<
@@ -64,7 +66,22 @@ const statusConfig: Record<
     },
 };
 
-const StatusCard: React.FC<StatusCardProps> = ({ status }) => {
+const StatusCard: React.FC<StatusCardProps> = ({ reading }) => {
+    if (reading === null) {
+        return <CardShimmer />;
+    }
+    let status: StatusType;
+    const isClean = reading.percent >= 50;
+    const isAvailable = reading.control & 1 || (reading.control >> 1) & 1;
+    if (isClean && isAvailable) {
+        status = "safe";
+    } else if (!isClean && isAvailable) {
+        status = "dirty";
+    } else if (isClean && !isAvailable) {
+        status = "empty";
+    } else {
+        status = "both";
+    }
     const { title, bgColor, WaveComponent, pills, titleColor } = statusConfig[status];
 
     // Custom shadow untuk Android - hanya shadow bawah
