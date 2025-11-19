@@ -19,7 +19,8 @@ import { IOT_INTERVAL_MS, ON_OFF_THRESHOLD_MS } from "@/lib/constants";
 import { globals } from "@/lib/globals";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import PageTitle from "@/src/components/PageTitle";
-import { toastInfo } from "@/src/components/ToastStack";
+import { toastInfo, toastSuccess, toastError, toastWarning } from "@/src/components/ToastStack";
+import Button from "@/src/components/Button";
 
 let timeout: null | number = null;
 
@@ -111,11 +112,14 @@ const Home = () => {
                             label="Kualitas Air"
                             level={reading === null ? null : percentToLevel(reading.percent)}
                             isButton
+                            description="Ringkasan kualitas air untuk menjamin air aman digunakan untuk kegiatan sehari-hari"
                         />
                     </View>
                     <View className="mt-[14%]">
                         <PumpDurationChart summaries={summaries} />
                     </View>
+
+                    <View className="mt-[14%]"></View>
                 </ScrollView>
             </View>
         </RefreshableScreen>

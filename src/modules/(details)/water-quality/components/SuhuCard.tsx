@@ -3,6 +3,8 @@ import React from "react";
 import { Typography } from "@/src/components/Typography";
 import { Ionicons } from "@expo/vector-icons";
 import { CardShimmer } from "@/src/components/Shimmer";
+import { InfoTooltip } from "@/src/components/Tooltip";
+import { TooltipContent } from "@/src/components/TooltipContent";
 
 interface SuhuCardProps {
     label: string;
@@ -58,9 +60,10 @@ const SuhuCard: React.FC<SuhuCardProps> = ({ label, temp }) => {
                     {label}
                 </Typography>
                 <View className="flex flex-row gap-1 justify-center items-center">
-                    <Pressable onPress={handleInfoPress}>
-                        <Ionicons name="help-circle" size={30} color={"#7D9F8C"} />
-                    </Pressable>
+                    <InfoTooltip
+                        iconSize={30}
+                        content={<TooltipContent description="Suhu Air Saat Ini" />}
+                    />
                     <SuhuPill temp={20!} className="" />
                 </View>
             </View>

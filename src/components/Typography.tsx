@@ -8,8 +8,9 @@ type TypoWeight = "regular" | "semibold";
 interface TypographyProps extends TextProps {
     children: React.ReactNode;
     variant: TypoVariant;
-    weight?: TypoWeight; 
+    weight?: TypoWeight;
     className?: string;
+    key?: string | number;
 }
 
 const variantStyles: Record<TypoVariant, string> = {
@@ -33,7 +34,7 @@ const weightStyles: Record<TypoWeight, string> = {
 // 7. Komponennya
 export function Typography({
     children,
-    variant, 
+    variant,
     weight = "regular", // Default-nya 'regular'
     className = "",
     ...props // Untuk props lain (cth: style, onPress)

@@ -40,16 +40,19 @@ const WaterQuality = () => {
                                     : percentToLevel(scoreTurbidity(reading!.turbidity))
                             }
                             customPillText={`PPM ${reading === null ? null : reading!.turbidity}`}
+                            description="Indikator dan tingkat turbiditas (PPM)"
                         />
                         <QualityCard
                             label="Keasaman"
                             level={reading === null ? null : percentToLevel(scorePH(reading!.pH))}
                             customPillText={`pH ${reading === null ? null : reading!.pH}`}
+                            description="Indikator dan tingkat keasaman (pH)"
                         />
                         <QualityCard
                             label="Kekeruhan"
                             level={reading === null ? null : percentToLevel(scoreTDS(reading!.tds))}
                             customPillText={`${reading === null ? null : reading!.tds} NTU`}
+                            description="Indikator dan tingkat kekeruhan (NTU)"
                         />
                         <SuhuCard
                             label="Suhu"

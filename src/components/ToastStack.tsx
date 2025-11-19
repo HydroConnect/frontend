@@ -9,7 +9,7 @@ import {
     UIManager,
 } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { Audio } from "expo-av";
+import { createAudioPlayer } from "expo-audio";
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -22,22 +22,23 @@ interface ToastItem {
     message?: string;
 }
 
+const notificationSource = require("../../assets/sounds/notification-AMP.mp3");
 let toastQueue: ToastItem[] = [];
 let setToastsCallback: ((toasts: ToastItem[]) => void) | null = null;
 let toastIdCounter = 0;
+const player = createAudioPlayer(notificationSource);
+player.volume = 5.0;
 
-const playNotificationSound = async () => {
+export const playNotificationSound = () => {
     try {
-        const { sound } = await Audio.Sound.createAsync(
-            require("../../assets/sounds/notification-AMP.mp3")
-        );
-        await sound.playAsync();
-        sound.setOnPlaybackStatusUpdate(async (status) => {
-            if (status.isLoaded && status.didJustFinish) {
-                await sound.unloadAsync();
-            }
-        });
-    } catch (error) {}
+        // 2. Reset durasi ke 0 (biar kalau dipanggil cepat berturut-turut, suaranya ngulang dari awal)
+        player.seekTo(0);
+
+        // 3. Mainkan
+        player.play();
+    } catch (error) {
+        // Silent fail (aman)
+    }
 };
 
 export const addToast = (
@@ -115,7 +116,7 @@ const ToastComponent = ({ toast, index }: { toast: ToastItem; index: number }) =
 
     const offset = index * 15;
     const scale = 1 - index * 0.05;
-    const opacity = 1 - index * 0.2;
+    const opacity = 1 - index * 0.05;
 
     const translateYEntry = slideAnim.interpolate({
         inputRange: [0, 1],
@@ -191,4 +192,5 @@ export const toastError = ({ message }: { message: string }) =>
     addToast("error", "Terjadi Kesalahan", message);
 export const toastWarning = ({ message }: { message: string }) =>
     addToast("warning", "Peringatan", message);
-export const toastInfo = ({ message }: { message: string }) => addToast("info", "Info", message);
+export const toastInfo = ({ message }: { message: string }) =>
+    addToast("info", "Informasi", message);
