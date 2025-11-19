@@ -7,6 +7,8 @@ import type { iSummaries } from "@/schemas/summaries";
 import { formatDate, getHari, getHourMinute, round } from "@/lib/utils";
 import { SUMMARY_GRAPH_PRECISION } from "@/lib/constants";
 import { CardShimmer } from "@/src/components/Shimmer";
+import { InfoTooltip } from "@/src/components/Tooltip";
+import { TooltipContent } from "@/src/components/TooltipContent";
 
 const CHART_MAX_HEIGHT_PX = 150; // 100px (atau h-24 di Tailwind)
 
@@ -37,9 +39,12 @@ const PumpDurationChart: React.FC<{ summaries: iSummaries[] | null; [key: string
                 <Typography variant="h3" weight="semibold">
                     Pompa Menyala
                 </Typography>
-                <Pressable onPress={handleInfoPress}>
-                    <Ionicons name="help-circle" size={30} color={"#7D9F8C"} />
-                </Pressable>
+                <InfoTooltip
+                    iconSize={30}
+                    content={
+                        <TooltipContent description="Lama Pompa Menyala Menunjukkan Banyaknya Air yang Digunakan" />
+                    }
+                />
             </View>
 
             {/* --- Subjudul (Tanggal) --- */}

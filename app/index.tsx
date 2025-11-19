@@ -1,9 +1,33 @@
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useEffect } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
+import Splashscreen from "@/src/modules/onboarding/Splashscreen";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
+
+const status = "PROD";
 
 const Index = () => {
     const router = useRouter();
+
+    useEffect(() => {
+        if (status === "PROD") {
+            const timer = setTimeout(() => {
+                router.push("/onboarding/onboarding1");
+            }, 3000);
+
+            return () => clearTimeout(timer);
+        }
+    }, []);
+
+    if (status === "PROD") {
+        return (
+            <SafeAreaView className="flex-1 bg-black" edges={["bottom"]}>
+                <StatusBar backgroundColor="white" style="dark" />
+                <Splashscreen />
+            </SafeAreaView>
+        );
+    }
 
     return (
         <View className="flex-1 items-center justify-center bg-pink-300">

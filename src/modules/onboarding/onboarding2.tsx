@@ -31,7 +31,7 @@ const OnboardingScreen2 = () => {
                 variant="secondary"
                 textVariant="body"
                 textWeight="semibold"
-                className="w-[27.5%] ml-[5%] mt-[20%]"
+                className="w-[30%] ml-[5%] mt-[20%]"
                 iconPosition="left"
                 icon={(props) => <Entypo name="chevron-left" size={16} color="currentColor" />}
             />

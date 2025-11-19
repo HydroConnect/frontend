@@ -1,9 +1,9 @@
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack } from "expo-router";
 import { useEffect, useState } from "react";
-import { View, Dimensions, Platform, useWindowDimensions } from "react-native";
+import { View, Dimensions, Platform } from "react-native";
 import * as NavigationBar from "expo-navigation-bar";
-import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import "./globals.css";
 import { ReadingCTX } from "@/lib/contexts/readingCTX";
 import { SummariesCTX } from "@/lib/contexts/summariesCTX";
@@ -33,6 +33,8 @@ export default function RootLayout() {
     useEffect(() => {
         if (Platform.OS === "android") {
             NavigationBar.setButtonStyleAsync("light");
+            NavigationBar.setPositionAsync("absolute");
+            NavigationBar.setVisibilityAsync("visible");
         }
         if (fontsLoaded || fontError) {
             SplashScreen.hideAsync();
