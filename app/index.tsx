@@ -5,17 +5,24 @@ import Splashscreen from "@/src/modules/onboarding/Splashscreen";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { ENVIRONMENT_STATUS } from "@/lib/constants";
+import { isFirstTime } from "@/lib/utils";
 
 const Index = () => {
     const router = useRouter();
 
     useEffect(() => {
         if (ENVIRONMENT_STATUS === "PRODUCTION") {
-            const timer = setTimeout(() => {
-                router.push("/onboarding/onboarding1");
-            }, 3000);
+            isFirstTime().then((firstTime) => {
+                if (firstTime) {
+                    const timer = setTimeout(() => {
+                        router.push("/onboarding/onboarding1");
+                    }, 3000);
 
-            return () => clearTimeout(timer);
+                    return () => clearTimeout(timer);
+                } else {
+                    router.push("/(tabs)/home");
+                }
+            });
         }
     }, []);
 
