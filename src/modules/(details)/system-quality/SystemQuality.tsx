@@ -14,9 +14,10 @@ import RangeSelectionModal from "./components/CSVModal";
 
 const SystemQuality = () => {
     const [isRangeModalVisible, setRangeModalVisible] = useState(false);
-    const handleSelectRange = (endDate: Date, rangeType: "week" | "month" | "year") => {
+    const handleSelectRange = (startDate: Date, endDate: Date) => {
+        console.log("Waktu Awal Dipilih:", startDate);
         console.log("Waktu Akhir Dipilih:", endDate);
-        console.log("Range Dipilih:", rangeType);
+        // tinggal implement di backend
     };
     const router = useRouter();
     const { height } = useWindowDimensions();
