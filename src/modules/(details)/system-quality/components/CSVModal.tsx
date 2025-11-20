@@ -85,13 +85,14 @@ const RangeSelectionModal = ({ visible, onClose, onSelectRange }: RangeSelection
     const snapPoints = useMemo(() => ["75%"], []);
 
     // Waktu Awal
-    const [startDay, setStartDay] = useState<string>("1");
-    const [startMonth, setStartMonth] = useState<string>(MONTHS[0] ?? "Januari");
+    const dateNow = new Date();
+    const [startDay, setStartDay] = useState<string>(dateNow.getDate().toString());
+    const [startMonth, setStartMonth] = useState<string>(MONTHS[dateNow.getMonth()]!);
     const [startYear, setStartYear] = useState<string>(currentYear.toString());
 
     // Waktu Akhir
-    const [endDay, setEndDay] = useState<string>(new Date().getDate().toString());
-    const [endMonth, setEndMonth] = useState<string>(MONTHS[new Date().getMonth()] ?? "Januari");
+    const [endDay, setEndDay] = useState<string>(dateNow.getDate().toString());
+    const [endMonth, setEndMonth] = useState<string>(MONTHS[dateNow.getMonth()]!);
     const [endYear, setEndYear] = useState<string>(currentYear.toString());
 
     const [pickerType, setPickerType] = useState<
