@@ -1,7 +1,7 @@
 export const BACKEND_API_BASE_URL = "http://localhost:3000"; // On Development change this to server IP
 export const BACKEND_API_REST_VERSION = "v1";
 export const BACKEND_API_IO_VERSION = "v1";
-export const MAX_DOWNLOAD_ID_LENGTH = 10;
+export const MAX_DOWNLOAD_ID_LENGTH = 50;
 export const ON_OFF_THRESHOLD_MS = 6000;
 export const ON_OFF_THRESHOLD_ERROR_MS = 4000;
 export const FETCH_REST_TIME_MS = 10000;
