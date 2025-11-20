@@ -19,10 +19,11 @@ import { IOT_INTERVAL_MS, ON_OFF_THRESHOLD_MS } from "@/lib/constants";
 import { globals } from "@/lib/globals";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import PageTitle from "@/src/components/PageTitle";
-import { toastInfo, toastSuccess, toastError, toastWarning } from "@/src/components/ToastStack";
-import Button from "@/src/components/Button";
+import { toastInfo, toastWarning } from "@/src/components/ToastStack";
 
 let timeout: null | number = null;
+
+let getConnection: () => boolean;
 
 const Home = () => {
     const { height } = useWindowDimensions();
@@ -32,18 +33,27 @@ const Home = () => {
     const { summaries, setSummaries } = useContext(SummariesCTX)!;
     const { connection, setConnection } = useContext(ConnectionCTX)!;
 
+    getConnection = () => {
+        return connection;
+    };
+
     useEffect(() => {
         function nowConnectAndListen() {
             connectAndListen(
                 () => {
                     fetchData(setReading, setSummaries);
                     setConnection(true);
-                    toastInfo({ message: "Connected!" });
+                    if (getConnection() === false) {
+                        toastInfo({ message: "Connected!" });
+                    }
                     timeout = setTimeout(async () => {
                         await fetchData(setReading, null);
                     }, ON_OFF_THRESHOLD_MS);
                 },
                 () => {
+                    if (getConnection() === true) {
+                        toastWarning({ message: "Disconnected!" });
+                    }
                     setConnection(false);
                 },
                 (readings: iReadings) => {
