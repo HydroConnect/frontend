@@ -4,14 +4,13 @@ import { Text, TouchableOpacity, View } from "react-native";
 import Splashscreen from "@/src/modules/onboarding/Splashscreen";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
-
-const status = "PROD";
+import { ENVIRONMENT_STATUS } from "@/lib/constants";
 
 const Index = () => {
     const router = useRouter();
 
     useEffect(() => {
-        if (status === "PROD") {
+        if (ENVIRONMENT_STATUS === "PRODUCTION") {
             const timer = setTimeout(() => {
                 router.push("/onboarding/onboarding1");
             }, 3000);
@@ -20,7 +19,7 @@ const Index = () => {
         }
     }, []);
 
-    if (status === "PROD") {
+    if (ENVIRONMENT_STATUS === "PRODUCTION") {
         return (
             <SafeAreaView className="flex-1 bg-black" edges={["bottom"]}>
                 <StatusBar backgroundColor="white" style="dark" />
