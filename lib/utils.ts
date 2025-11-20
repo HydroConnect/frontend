@@ -25,6 +25,11 @@ export function getJam(date: Date): string {
         .replace(":", ".");
 }
 
+export function getMidnightDate(date: Date): Date {
+    date.setUTCHours(0, 0, 0, 1);
+    return date;
+}
+
 export function debounce(state: any, fun: (...args: any[]) => any, timeout: number = 400): void {
     if (state.now === true) {
         return;
