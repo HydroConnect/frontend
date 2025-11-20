@@ -45,9 +45,9 @@ function synthesizeFilename(downloadId: string, nonce: number = 0) {
 /**
  * @description Download Reports
  * @param downloadRequest DownloadRequest data
+ * @param mergeFailHandler Handler when merge fails
  * @param {boolean} _resume Resume the unfinished download (Should not be set by FE)
  * @param {boolean} _forcePick Force the file picker to open (Should not be set by FE)
- * @param mergeFailHandler Handler when merge fails
  * @returns {Promise<undefined | Error>}
  */
 export async function downloadReports(
@@ -70,8 +70,6 @@ export async function downloadReports(
             downloadId: progress.downloadId,
         });
     }
-
-    toastInfo({message: "Starting Download!"});
 
     let dirUri = "";
     if (progress === null) {
@@ -117,6 +115,7 @@ export async function downloadReports(
         writer.write(encode(readingsHeader.join(";") + "\n"));
     }
     setIsDownloading(true);
+    toastInfo({message: "Starting Download!"});
     return _startDownload(
         downloadRequest,
         async (readings: iReadings[]) => {
@@ -127,7 +126,7 @@ export async function downloadReports(
             await AsyncStorage.setItem("download-progress", JSON.stringify(progress));
         },
         async (downloadId: string) => {
-            toastSuccess({message: "Download for " + downloadId + " is finished!"});
+            toastSuccess({message: "Download is finished!"});
             await writer.close();
             setIsDownloading(false);
             const resp = await mergeDownloads(progress, dirUri);
