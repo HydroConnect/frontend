@@ -77,19 +77,27 @@ const OptionPicker = ({
 interface RangeSelectionModalProps {
     visible: boolean;
     onClose: () => void;
-    onSelectRange: (endDate: Date, rangeType: "week" | "month" | "year") => void;
+    onSelectRange: (startDate: Date, endDate: Date) => void;
 }
 
 const RangeSelectionModal = ({ visible, onClose, onSelectRange }: RangeSelectionModalProps) => {
     const bottomSheetModalRef = useRef<BottomSheetModal>(null);
-    const snapPoints = useMemo(() => ["65%"], []);
-    const [selectedDay, setSelectedDay] = useState<string>(new Date().getDate().toString());
-    const [selectedMonth, setSelectedMonth] = useState<string>(
-        MONTHS[new Date().getMonth()] ?? "Januari"
-    );
-    const [selectedYear, setSelectedYear] = useState<string>(currentYear.toString());
-    const [selectedRange, setSelectedRange] = useState<"week" | "month" | "year" | null>(null);
-    const [pickerType, setPickerType] = useState<"day" | "month" | "year" | null>(null);
+    const snapPoints = useMemo(() => ["75%"], []);
+
+    // Waktu Awal
+    const [startDay, setStartDay] = useState<string>("1");
+    const [startMonth, setStartMonth] = useState<string>(MONTHS[0] ?? "Januari");
+    const [startYear, setStartYear] = useState<string>(currentYear.toString());
+
+    // Waktu Akhir
+    const [endDay, setEndDay] = useState<string>(new Date().getDate().toString());
+    const [endMonth, setEndMonth] = useState<string>(MONTHS[new Date().getMonth()] ?? "Januari");
+    const [endYear, setEndYear] = useState<string>(currentYear.toString());
+
+    const [pickerType, setPickerType] = useState<
+        "startDay" | "startMonth" | "startYear" | "endDay" | "endMonth" | "endYear" | null
+    >(null);
+
     useEffect(() => {
         if (visible) bottomSheetModalRef.current?.present();
         else bottomSheetModalRef.current?.dismiss();
@@ -100,6 +108,7 @@ const RangeSelectionModal = ({ visible, onClose, onSelectRange }: RangeSelection
         },
         [onClose]
     );
+
     const renderBackdrop = useCallback(
         (props: any) => (
             <BottomSheetBackdrop
@@ -112,20 +121,22 @@ const RangeSelectionModal = ({ visible, onClose, onSelectRange }: RangeSelection
         []
     );
 
-    const getDaysInMonth = () => {
-        const monthIndex = MONTHS.indexOf(selectedMonth);
-        const year = parseInt(selectedYear);
-        const daysCount = new Date(year, monthIndex + 1, 0).getDate();
+    const getDaysInMonth = (month: string, year: string) => {
+        const monthIndex = MONTHS.indexOf(month);
+        const yearInt = parseInt(year);
+        const daysCount = new Date(yearInt, monthIndex + 1, 0).getDate();
         return Array.from({ length: daysCount }, (_, i) => (i + 1).toString());
     };
 
     const handleConfirm = () => {
-        if (selectedRange) {
-            const monthIndex = MONTHS.indexOf(selectedMonth);
-            const endDate = new Date(parseInt(selectedYear), monthIndex, parseInt(selectedDay));
-            onSelectRange(endDate, selectedRange);
-            bottomSheetModalRef.current?.dismiss();
-        }
+        const startMonthIndex = MONTHS.indexOf(startMonth);
+        const startDateObj = new Date(parseInt(startYear), startMonthIndex, parseInt(startDay));
+
+        const endMonthIndex = MONTHS.indexOf(endMonth);
+        const endDateObj = new Date(parseInt(endYear), endMonthIndex, parseInt(endDay));
+
+        onSelectRange(startDateObj, endDateObj);
+        bottomSheetModalRef.current?.dismiss();
     };
 
     return (
@@ -138,115 +149,142 @@ const RangeSelectionModal = ({ visible, onClose, onSelectRange }: RangeSelection
                 backdropComponent={renderBackdrop}
                 enablePanDownToClose={true}
                 backgroundStyle={{ borderRadius: 24 }}>
-                <BottomSheetView style={{ flex: 1, padding: 24 }}>
-                    <Typography variant="h3" weight="semibold" className="text-center mb-6">
-                        Pilih Waktu Akhir
+                <BottomSheetView style={{ flex: 1, padding: 24, marginBottom: 16 }}>
+                    <Typography variant="h3" weight="semibold" className="text-center mb-4">
+                        Pilih Waktu Awal
                     </Typography>
-                    <View className="flex-row justify-between mb-8 gap-2">
+                    <View className="flex-row justify-between mb-6 gap-2">
                         <Pressable
                             className="flex-1 flex-row items-center justify-between border border-gray-300 rounded-xl p-3 active:bg-gray-50 active:border-green-500"
-                            onPress={() => setPickerType("day")}>
+                            onPress={() => setPickerType("startDay")}>
                             <Typography variant="body" weight="semibold" className="text-gray-700">
-                                {selectedDay}
+                                {startDay}
                             </Typography>
                             <Ionicons name="chevron-down" size={16} color="gray" />
                         </Pressable>
 
                         <Pressable
                             className="flex-[1.5] flex-row items-center justify-between border border-gray-300 rounded-xl p-3 active:bg-gray-50 active:border-green-500"
-                            onPress={() => setPickerType("month")}>
+                            onPress={() => setPickerType("startMonth")}>
                             <Typography
                                 variant="body"
                                 weight="semibold"
                                 className="text-gray-700"
                                 numberOfLines={1}>
-                                {selectedMonth}
+                                {startMonth}
                             </Typography>
                             <Ionicons name="chevron-down" size={16} color="gray" />
                         </Pressable>
 
                         <Pressable
                             className="flex-1 flex-row items-center justify-between border border-gray-300 rounded-xl p-3 active:bg-gray-50 active:border-green-500"
-                            onPress={() => setPickerType("year")}>
+                            onPress={() => setPickerType("startYear")}>
                             <Typography variant="body" weight="semibold" className="text-gray-700">
-                                {selectedYear}
+                                {startYear}
                             </Typography>
                             <Ionicons name="chevron-down" size={16} color="gray" />
                         </Pressable>
                     </View>
 
-                    <View className="border-b border-gray-200 mb-8" />
+                    <View className="border-b border-gray-200 mb-6" />
 
-                    <Typography variant="h3" weight="semibold" className="text-center mb-2">
-                        Pilih Range Data
+                    {/* Waktu Akhir Section */}
+                    <Typography variant="h3" weight="semibold" className="text-center mb-4">
+                        Pilih Waktu Akhir
                     </Typography>
-                    <Typography variant="body" className="text-gray-500 text-center mb-6">
-                        Impor data dalam range sebelum waktu akhir
-                    </Typography>
+                    <View className="flex-row justify-between mb-8 gap-2">
+                        <Pressable
+                            className="flex-1 flex-row items-center justify-between border border-gray-300 rounded-xl p-3 active:bg-gray-50 active:border-green-500"
+                            onPress={() => setPickerType("endDay")}>
+                            <Typography variant="body" weight="semibold" className="text-gray-700">
+                                {endDay}
+                            </Typography>
+                            <Ionicons name="chevron-down" size={16} color="gray" />
+                        </Pressable>
 
-                    <View className="gap-3 mb-8">
-                        <Button
-                            label="1 Minggu"
-                            variant="secondary"
-                            onPress={() => setSelectedRange("week")}
-                            className={selectedRange === "week" ? "border-2 border-green-500" : ""}
-                            textVariant="h3"
-                            isIcon={false}
-                        />
+                        <Pressable
+                            className="flex-[1.5] flex-row items-center justify-between border border-gray-300 rounded-xl p-3 active:bg-gray-50 active:border-green-500"
+                            onPress={() => setPickerType("endMonth")}>
+                            <Typography
+                                variant="body"
+                                weight="semibold"
+                                className="text-gray-700"
+                                numberOfLines={1}>
+                                {endMonth}
+                            </Typography>
+                            <Ionicons name="chevron-down" size={16} color="gray" />
+                        </Pressable>
 
-                        <Button
-                            label="1 Bulan"
-                            variant="secondary"
-                            onPress={() => setSelectedRange("month")}
-                            className={selectedRange === "month" ? "border-2 border-green-500" : ""}
-                            textVariant="h3"
-                            isIcon={false}
-                        />
-
-                        <Button
-                            label="1 Tahun"
-                            variant="secondary"
-                            onPress={() => setSelectedRange("year")}
-                            className={selectedRange === "year" ? "border-2 border-green-500" : ""}
-                            textVariant="h3"
-                            isIcon={false}
-                        />
+                        <Pressable
+                            className="flex-1 flex-row items-center justify-between border border-gray-300 rounded-xl p-3 active:bg-gray-50 active:border-green-500"
+                            onPress={() => setPickerType("endYear")}>
+                            <Typography variant="body" weight="semibold" className="text-gray-700">
+                                {endYear}
+                            </Typography>
+                            <Ionicons name="chevron-down" size={16} color="gray" />
+                        </Pressable>
                     </View>
+
                     <Button
                         label="Konfirmasi"
                         variant="primary"
                         onPress={handleConfirm}
-                        className={!selectedRange ? "opacity-50" : ""}
                         textVariant="h3"
                         isIcon={false}
                     />
                 </BottomSheetView>
             </BottomSheetModal>
-
             <OptionPicker
-                visible={pickerType === "day"}
-                title="Tanggal"
-                data={getDaysInMonth()}
-                onSelect={setSelectedDay}
+                visible={pickerType === "startDay"}
+                title="Tanggal Awal"
+                data={getDaysInMonth(startMonth, startYear)}
+                onSelect={setStartDay}
                 onClose={() => setPickerType(null)}
             />
 
             <OptionPicker
-                visible={pickerType === "month"}
-                title="Bulan"
+                visible={pickerType === "startMonth"}
+                title="Bulan Awal"
                 data={MONTHS}
                 onSelect={(m) => {
-                    setSelectedMonth(m);
-                    setSelectedDay("1");
+                    setStartMonth(m);
+                    setStartDay("1");
                 }}
                 onClose={() => setPickerType(null)}
             />
 
             <OptionPicker
-                visible={pickerType === "year"}
-                title="Tahun"
+                visible={pickerType === "startYear"}
+                title="Tahun Awal"
                 data={YEARS}
-                onSelect={setSelectedYear}
+                onSelect={setStartYear}
+                onClose={() => setPickerType(null)}
+            />
+
+            <OptionPicker
+                visible={pickerType === "endDay"}
+                title="Tanggal Akhir"
+                data={getDaysInMonth(endMonth, endYear)}
+                onSelect={setEndDay}
+                onClose={() => setPickerType(null)}
+            />
+
+            <OptionPicker
+                visible={pickerType === "endMonth"}
+                title="Bulan Akhir"
+                data={MONTHS}
+                onSelect={(m) => {
+                    setEndMonth(m);
+                    setEndDay("1");
+                }}
+                onClose={() => setPickerType(null)}
+            />
+
+            <OptionPicker
+                visible={pickerType === "endYear"}
+                title="Tahun Akhir"
+                data={YEARS}
+                onSelect={setEndYear}
                 onClose={() => setPickerType(null)}
             />
         </>
