@@ -8,7 +8,7 @@ import {
     Platform,
     UIManager,
 } from "react-native";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 import { createAudioPlayer } from "expo-audio";
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -76,11 +76,6 @@ const removeToast = (id: string) => {
     }
 };
 
-const IconWrapper = ({ name, color, bgColor }: { name: any; color: string; bgColor: string }) => (
-    <View style={{ backgroundColor: bgColor, borderRadius: 999, padding: 6 }}>
-        <Ionicons name={name} size={24} color={color} />
-    </View>
-);
 const CheckIcon = () => <MaterialIcons name="check" size={24} color="white" />;
 const ErrorIcon = () => <MaterialIcons name="error-outline" size={24} color="white" />;
 const InfoIcon = () => <MaterialIcons name="info-outline" size={24} color="white" />;
