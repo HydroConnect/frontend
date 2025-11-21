@@ -8,3 +8,4 @@ export const FETCH_REST_TIME_MS = 10000;
 export const IOT_INTERVAL_MS = 2000;
 export const SUMMARY_GRAPH_PRECISION = 2;
 export const ENVIRONMENT_STATUS = "PRODUCTION";
+export const PROGRESS_SCALING_FACTOR = 2000;
