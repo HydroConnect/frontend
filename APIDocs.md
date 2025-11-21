@@ -2,26 +2,34 @@
 
 ## Overview
 
-This document provides an overview of the **Frontend API Reference**, including schemas, constants, and function documentation.
+This document provides a complete reference for the **Frontend API**, including schemas, constants, contexts, globals, socket handlers, REST utilities, and download logic.
 
 > **Note:** `ApiTest.tsx` is a **development-only** page for API debugging and must be excluded from production.
+
+All console logs throughout the codebase have been replaced with:
+
+- `toastInfo`
+- `toastError`
+- `toastSuccess`
+- `toastWarn`
+
+These functions must be used for all developer-facing and user-facing notifications.
 
 ---
 
 ## Directory Structure
 
 ```
-
-lib/ # Logic, constants, and functions
-schemas/ # All schemas used by the frontend
-
+lib/                     # Logic, constants, functions
+lib/contexts/            # React Context Providers (connection, readings, summaries)
+schemas/                 # All schemas used by the frontend
 ```
 
 ---
 
-## Schemas
+# Schemas
 
-### DownloadProgress
+## DownloadProgress
 
 ```ts
 interface iDownloadProgress {
@@ -43,7 +51,7 @@ const downloadProgressSample: iDownloadProgress = {
 
 ---
 
-### DownloadRequest (Sync with BE)
+## DownloadRequest (Sync with BE)
 
 ```ts
 interface iDownloadRequest {
@@ -62,7 +70,7 @@ const downloadRequestSample = {
 
 ---
 
-### Readings (Sync with BE)
+## Readings (Sync with BE)
 
 ```ts
 interface iReadings {
@@ -70,8 +78,8 @@ interface iReadings {
     pH: number;
     tds: number;
     temperature: number; // Degree Celcius
-    control: number; // For control info MSB --> LSB (valve, sensor, distribution, resservoir, tank)
-    percent: number; // Percent from formula (ex: 100, 50, 0)
+    control: number; // MSB → LSB (valve, sensor, distribution, reservoir, tank)
+    percent: number; // Percent from formula
     timestamp: string;
 }
 
@@ -88,41 +96,136 @@ const readingsSample: iReadings = {
 
 ---
 
-### Summaries (Sync with BE)
+## Updated Summaries Schema (Sync with BE)
 
 ```ts
 interface iSummaries {
-    min: iReadings;
-    max: iReadings;
+    uptime: number;
     timestamp: string;
 }
 
 const summariesSample: iSummaries = {
-    min: readingsSample,
-    max: readingsSample,
+    uptime: 3600,
     timestamp: "2025-10-21T01:23:54.533+00:00",
+};
+
+export { summariesSample };
+export type { iSummaries };
+```
+
+---
+
+## Notification Schema
+
+```ts
+export const enum NotificationType {
+    on,
+    off,
+}
+
+interface iNotification {
+    type: NotificationType;
+    timestamp: Date;
+}
+
+const notificationSample: iNotification = {
+    type: NotificationType.on,
+    timestamp: new Date(),
+};
+
+export { notificationSample };
+export type { iNotification };
+```
+
+---
+
+# Contexts (`lib/contexts/`)
+
+## connectionCTX
+
+```ts
+interface iConnectionCTX {
+    connection: boolean;
+    setConnection: (...args: any) => any;
+}
+```
+
+Used for global UI connection status, updated by socket events.
+
+---
+
+## readingCTX
+
+```ts
+interface iReadingCTX {
+    reading: null | iReadings;
+    setReading: (...args: any) => any;
+}
+```
+
+Stores the **latest IoT reading**.
+
+---
+
+## summariesCTX
+
+```ts
+interface iSummariesCTX {
+    summaries: null | iSummaries[];
+    setSummaries: (...args: any) => any;
+}
+```
+
+Stores the **latest summaries** returned from backend.
+
+---
+
+# Globals (`lib/globals.tsx`)
+
+These globals are used for syncing UI state, caching, and checking when to re-fetch.
+
+```ts
+interface iGlobals {
+    GLatestReadings: null | iReadings;
+    GSummaries: null | iSummaries[];
+    GLastFetch: null | Date;
+}
+
+export const globals: iGlobals = {
+    GLatestReadings: null,
+    GSummaries: null,
+    GLastFetch: null,
 };
 ```
 
+- `GLatestReadings` is updated by socket stream
+- `GSummaries` is updated by summaries REST calls
+- `GLastFetch` is used by offline-prefetch logic
+
 ---
 
-## Constants
-
-**Constants.ts**
+# Constants
 
 ```ts
-export const BACKEND_API_BASE_URL = "http://192.168.1.6:3000"; // Change to server IP on development
+export const BACKEND_API_BASE_URL = "http://192.168.110.221:3000"; // On development adjust this to server IP
 export const BACKEND_API_REST_VERSION = "v1";
 export const BACKEND_API_IO_VERSION = "v1";
 export const MAX_DOWNLOAD_ID_LENGTH = 10;
-// SYNC WITH BE!
+
+export const ON_OFF_THRESHOLD_MS = 6000;
+export const ON_OFF_THRESHOLD_ERROR_MS = 4000;
+
+export const FETCH_REST_TIME_MS = 10000;
+export const IOT_INTERVAL_MS = 2000;
+
+export const SUMMARY_GRAPH_PRECISION = 2;
 ```
 
 ---
 
-## API Reference
+# API Reference
 
-### resumeDownload
+## resumeDownload
 
 ```ts
 /**
@@ -141,17 +244,9 @@ export async function resumeDownload(
 
 ---
 
-### downloadReports
+## downloadReports
 
 ```ts
-/**
- * @description Download Reports
- * @param downloadRequest DownloadRequest data
- * @param {boolean} _resume Resume unfinished download (internal use only)
- * @param {boolean} _forcePick Force file picker (internal use only)
- * @param mergeFailHandler Handler for merge failure
- * @returns {Promise<undefined | Error>}
- */
 export async function downloadReports(
     downloadRequest: iDownloadRequest,
     _resume: boolean = false,
@@ -164,13 +259,9 @@ export async function downloadReports(
 
 ---
 
-### disconnect
+## disconnect
 
 ```ts
-/**
- * @description Disconnect socket.io from server
- * @returns {undefined | Error} Error if not connected
- */
 export function disconnect(): undefined | Error;
 ```
 
@@ -178,16 +269,9 @@ export function disconnect(): undefined | Error;
 
 ---
 
-### \_startDownload
+## \_startDownload
 
 ```ts
-/**
- * @description Start backend download process (internal use only)
- * @param downloadRequest
- * @param downloadHandler
- * @param finishHandler
- * @returns {undefined | Error} Undefined if success, Error otherwise
- */
 export function _startDownload(
     downloadRequest: iDownloadRequest,
     downloadHandler: (readings: iReadings[], downloadId: string) => void | Promise<void>,
@@ -199,16 +283,9 @@ export function _startDownload(
 
 ---
 
-### connectAndListen
+## connectAndListen
 
 ```ts
-/**
- * @description Connect to socket.io and listen readings
- * @param connectHandler Is suggested to change UI Connection status
- * @param disconnectHandler Is suggested to handle changes in UI and to call connectAndListen() again
- * @param readingsHandler Is suggested to update the UI of the IoT data element
- * @param IOErrorHandler Is suggested to use default ErrorHandler (when receives error event)
- */
 export function connectAndListen(
     connectHandler: () => void,
     disconnectHandler: () => void,
@@ -219,72 +296,98 @@ export function connectAndListen(
 
 **File:** `io.ts`
 
----
+### Additional Behavior
 
-### isConnected
+A new socket reconnection listener has been introduced:
 
 ```ts
-/**
- * @description Get socket connection status
- * @returns {boolean}
- */
+socket!.io.on("reconnect_failed", () => {
+    handleLostConnection(disconnectHandler);
+});
+```
+
+This ensures the frontend correctly handles reconnection failures, updating UI and context states accordingly.
+
+---
+
+## isConnected
+
+```ts
 export function isConnected(): boolean;
 ```
 
-**File:** `io.ts`
-
 ---
 
-### setIsDownloading
+## setIsDownloading
 
 ```ts
-/**
- * @description Change downloading status (internal use only)
- * @param {boolean} input
- */
 export function setIsDownloading(input: boolean);
 ```
 
-**File:** `io.ts`
-
 ---
 
-### getIsDownloading
+## getIsDownloading
 
 ```ts
-/**
- * @description Get current downloading status
- * @returns {boolean}
- */
 export function getIsDownloading();
 ```
 
-**File:** `io.ts`
-
 ---
 
-### getSummaries
+## getSummaries
 
 ```ts
-/**
- * @description Get last 7 days summaries
- * @returns {Promise<iSummaries[] | Error>}
- */
 export async function getSummaries(): Promise<iSummaries[] | Error>;
 ```
 
 **File:** `rest.ts`
 
-> **Note:** Any undocumented functions are internal only.
-> **Warning:** Several functions and parameters are not meant to be sent by the frontend.
+---
+
+# REST Utilities: `rest.ts`
+
+### Prefetch
+
+- Used for fetching cached/offline data.
+- Stores results into `globals`.
+
+### fetchData
+
+- Dynamically fetches new data.
+- Applies throttling via `FETCH_REST_TIME_MS`.
+- Writes results to contexts and globals.
 
 ---
 
-## Error Handling
+# Utils (`utils.ts`)
 
-There are **three** custom error types:
+Contains UI helper functions:
 
-### IOError
+- formatting helpers
+- timestamp formatting
+- number formatting
+- UI-ready computed fields
+- toast wrappers (replacing console logs)
+
+---
+
+# RefreshablePages Component
+
+A utility component that triggers:
+
+- `fetchData()`
+- summary refresh
+- UI refresh
+
+Used to ensure pages automatically update based on timers or user interaction.
+
+---
+
+# Error Handling
+
+There are **three** custom error types.
+
+## IOError
 
 ```ts
 IOError(type: IOErrorEnum)
@@ -294,21 +397,17 @@ enum IOErrorEnum {
 }
 ```
 
-Used for **IO-related** errors.
-
 ---
 
-### HTTPError
+## HTTPError
 
 ```ts
 HTTPError(statusCode: number)
 ```
 
-Used for **HTTP/REST** related errors.
-
 ---
 
-### DownloadError
+## DownloadError
 
 ```ts
 DownloadError(type: DownloadErrorEnum)
@@ -325,26 +424,19 @@ enum DownloadErrorEnum {
 }
 ```
 
-Used for **Download-related** errors.
-
 ---
 
-### Default Error Handler
+## Default Error Handler
 
 ```ts
-/**
- * @description Default handler for catching errors
- * @suggestion Show modal or alert to the UI
- */
 function errorHandler(error: Error);
 ```
 
 ---
 
-### Test Case
+# Test Case Coverage
 
-This test case must be checked when implementing new feature
-Downloads Error test case:
+## Download Error Test Cases
 
 ```
 - Invalid name (name > MAX_DOWNLOAD_ID_LENGTH)
@@ -358,7 +450,9 @@ Downloads Error test case:
 - User try to resume but there are no unfinished downloads
 ```
 
-Http Test Case:
+---
+
+## HTTP Test Case
 
 ```
 - Server Down

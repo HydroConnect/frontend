@@ -1,9 +1,39 @@
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useEffect } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
+import Splashscreen from "@/src/modules/onboarding/Splashscreen";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
+import { ENVIRONMENT_STATUS } from "@/lib/constants";
+import { isFirstTime } from "@/lib/utils";
 
 const Index = () => {
     const router = useRouter();
+
+    useEffect(() => {
+        if (ENVIRONMENT_STATUS === "PRODUCTION") {
+            isFirstTime().then((firstTime) => {
+                if (firstTime) {
+                    const timer = setTimeout(() => {
+                        router.replace("/onboarding/onboarding1");
+                    }, 3000);
+
+                    return () => clearTimeout(timer);
+                } else {
+                    router.replace("/(tabs)/home");
+                }
+            });
+        }
+    }, []);
+
+    if (ENVIRONMENT_STATUS === "PRODUCTION") {
+        return (
+            <SafeAreaView className="flex-1 bg-black" edges={["bottom"]}>
+                <StatusBar backgroundColor="white" style="dark" />
+                <Splashscreen />
+            </SafeAreaView>
+        );
+    }
 
     return (
         <View className="flex-1 items-center justify-center bg-pink-300">

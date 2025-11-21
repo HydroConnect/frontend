@@ -4,6 +4,8 @@ import { Typography } from "@/src/components/Typography";
 import { StatusPill } from "@/src/components/StatusPill";
 import { Ionicons } from "@expo/vector-icons";
 import { CardShimmer } from "@/src/components/Shimmer";
+import { InfoTooltip } from "@/src/components/Tooltip";
+import { TooltipContent } from "@/src/components/TooltipContent";
 
 type CardStatus = "full" | "halfLeft" | "halfRight" | "empty";
 
@@ -38,7 +40,7 @@ const statusConfig: Record<
     empty: {
         pillVariant: "warn",
         pillText: "Habis",
-        segment1Class: "bg-yellow-100",
+        segment1Class: "bg-blue-50",
         segment2Class: "bg-blue-50",
     },
 };
@@ -76,13 +78,23 @@ const WaterRemainingCard: React.FC<{ control: number | null; [key: string]: unkn
                 <Typography variant="h3" weight="semibold">
                     Sisa Air
                 </Typography>
-                <View className="flex-row justify-center items-center gap-x-1">
-                    <Pressable onPress={handleInfoPress}>
-                        <Ionicons name="help-circle" size={30} color={"#7D9F8C"} />
-                    </Pressable>
-                    <View>
-                        <StatusPill variant={pillVariant} text={pillText} />
-                    </View>
+
+                <View className="flex-row justify-center items-center">
+                    <InfoTooltip
+                        iconSize={30}
+                        content={
+                            <TooltipContent
+                                // Sesuai teks di gambar kamu:
+                                description="Menunjukkan sisa air yang tersedia di dalam tandon"
+                                items={[
+                                    { label: "1", value: "Tandon kecil habis" },
+                                    { label: "2", value: "Air penuh" },
+                                ]}
+                            />
+                        }
+                    />
+
+                    <StatusPill variant={pillVariant} text={pillText} />
                 </View>
             </View>
             <View className="mt-4">

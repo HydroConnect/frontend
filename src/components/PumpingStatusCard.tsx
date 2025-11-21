@@ -3,7 +3,7 @@ import { View } from "react-native";
 import { Typography } from "@/src//components/Typography";
 import { StatusPill } from "@/src/components/StatusPill";
 import type { iReadings } from "@/schemas/readings";
-import { ON_OFF_THRESHOLD_MS } from "@/lib/constants";
+import { ON_OFF_THRESHOLD_ERROR_MS, ON_OFF_THRESHOLD_MS } from "@/lib/constants";
 import { formatDate, getJam } from "@/lib/utils";
 import { CardShimmer } from "./Shimmer";
 
@@ -13,7 +13,10 @@ const PumpingStatusCard: React.FC<{ reading: iReadings | null; [key: string]: un
     if (reading === null) {
         return <CardShimmer />;
     }
-    if (Date.now() - new Date(reading.timestamp).getTime() <= ON_OFF_THRESHOLD_MS) {
+    if (
+        new Date().getTime() - new Date(reading.timestamp).getTime() <=
+        ON_OFF_THRESHOLD_MS - ON_OFF_THRESHOLD_ERROR_MS
+    ) {
         return (
             <View className="w-full rounded-3xl p-4 bg-green-50">
                 <Typography

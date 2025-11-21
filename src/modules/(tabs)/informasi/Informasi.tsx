@@ -1,15 +1,16 @@
-import { View, ScrollView, useWindowDimensions } from "react-native";
+import { View, ScrollView, useWindowDimensions, Linking } from "react-native";
 import React from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import { Typography } from "@/src/components/Typography";
 import Button from "@/src/components/Button";
 import NotificationCard from "./components/NotificationCard";
 import Entypo from "@expo/vector-icons/Entypo";
-import { useRouter } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import LogoAirMati from "@/assets/images/informasi/LogoAirMati";
 import LogoAirNyala from "@/assets/images/informasi/LogoAirNyala";
 import { debounce } from "@/lib/utils";
 import { RefreshableScreen } from "@/src/components/RefreshableScreen";
+import PageTitle from "@/src/components/PageTitle";
 
 const Informasi = () => {
     const { height } = useWindowDimensions();
@@ -37,10 +38,7 @@ const Informasi = () => {
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={{ paddingBottom: navbarPadding }} // Responsif berdasarkan tinggi layar
                 >
-                    <Typography variant="h3" weight="semibold" className="mb-[15%]">
-                        Informasi
-                    </Typography>
-
+                    <PageTitle title="Informasi" className={"mb-[45px]"} />
                     {/* Info Section */}
                     <View className="mb-[5%]">
                         {/* Pemantauan Sistem Button */}
@@ -70,7 +68,7 @@ const Informasi = () => {
                                 <Entypo name="chevron-right" size={18} color="white" />
                             )}
                             onPress={() => {
-                                /* Navigate to Hubungi Kami */
+                                Linking.openURL("https://www.instagram.com/hydroconnect.project/");
                             }}
                         />
 
@@ -84,7 +82,7 @@ const Informasi = () => {
                                 <Entypo name="chevron-right" size={18} color="white" />
                             )}
                             onPress={() => {
-                                /* Navigate to Tentang Kami */
+                                router.push("/(details)/about-us");
                             }}
                         />
                     </View>

@@ -1,6 +1,5 @@
-import { Typography } from "@/src/components/Typography";
 import React, { useContext, useEffect } from "react";
-import { View, ScrollView, useWindowDimensions, Text } from "react-native";
+import { View, ScrollView, useWindowDimensions } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import StatusCard from "./components/StatusCard";
 import PumpingStatusCard from "../../../components/PumpingStatusCard";
@@ -19,8 +18,12 @@ import type { iReadings } from "@/schemas/readings";
 import { IOT_INTERVAL_MS, ON_OFF_THRESHOLD_MS } from "@/lib/constants";
 import { globals } from "@/lib/globals";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import PageTitle from "@/src/components/PageTitle";
+import { toastInfo, toastWarning } from "@/src/components/ToastStack";
 
 let timeout: null | number = null;
+
+let getConnection: () => boolean;
 
 const Home = () => {
     const { height } = useWindowDimensions();
@@ -30,16 +33,27 @@ const Home = () => {
     const { summaries, setSummaries } = useContext(SummariesCTX)!;
     const { connection, setConnection } = useContext(ConnectionCTX)!;
 
+    getConnection = () => {
+        return connection;
+    };
+
     useEffect(() => {
         function nowConnectAndListen() {
             connectAndListen(
                 () => {
+                    fetchData(setReading, setSummaries);
                     setConnection(true);
+                    if (getConnection() === false) {
+                        toastInfo({ message: "Connected!" });
+                    }
                     timeout = setTimeout(async () => {
                         await fetchData(setReading, null);
                     }, ON_OFF_THRESHOLD_MS);
                 },
                 () => {
+                    if (getConnection() === true) {
+                        toastWarning({ message: "Disconnected!" });
+                    }
                     setConnection(false);
                 },
                 (readings: iReadings) => {
@@ -48,7 +62,7 @@ const Home = () => {
                     }
                     setReading(readings);
 
-                    globals.GSummaries![0]!.uptime += IOT_INTERVAL_MS;
+                    globals.GSummaries![0]!.uptime += IOT_INTERVAL_MS / 1000;
                     setSummaries([...globals.GSummaries!]); // Must be expanded to avoid memoization
                     AsyncStorage.setItem("summaries", JSON.stringify(globals.GSummaries));
 
@@ -62,7 +76,6 @@ const Home = () => {
         fetchData(setReading, setSummaries);
         NetInfo.addEventListener((state) => {
             if (state.isInternetReachable === true) {
-                fetchData(setReading, setSummaries);
                 if (!connection) {
                     nowConnectAndListen();
                 }
@@ -90,12 +103,9 @@ const Home = () => {
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={{ paddingBottom: navbarPadding }} // Responsif berdasarkan tinggi layar
                 >
-                    <Typography variant="h3" weight="semibold">
-                        <Text>Hydroconnect </Text>
-                        {connection ? <Text>(Connected)</Text> : <Text>(Disconnected)</Text>}
-                    </Typography>
+                    <PageTitle title="Hydroconnect" />
                     <View className="my-[15%]">
-                        <StatusCard status="safe" />
+                        <StatusCard reading={reading} />
                     </View>
                     <View className="mb-[5%]">
                         <PumpingStatusCard reading={reading} />
@@ -112,11 +122,14 @@ const Home = () => {
                             label="Kualitas Air"
                             level={reading === null ? null : percentToLevel(reading.percent)}
                             isButton
+                            description="Ringkasan kualitas air untuk menjamin air aman digunakan untuk kegiatan sehari-hari"
                         />
                     </View>
                     <View className="mt-[14%]">
                         <PumpDurationChart summaries={summaries} />
                     </View>
+
+                    <View className="mt-[14%]"></View>
                 </ScrollView>
             </View>
         </RefreshableScreen>

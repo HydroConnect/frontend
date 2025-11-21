@@ -1,5 +1,11 @@
 import type { iDownloadRequest } from "@/schemas/downloadRequest";
-import { _startDownload, getIsDownloading, isConnected, setIsDownloading } from "./io";
+import {
+    _startDownload,
+    getIsDownloading,
+    isConnected,
+    setIsDownloading,
+    setShouldContinue,
+} from "./io";
 import { readingsHeader, type iReadings } from "@/schemas/readings";
 import * as fs from "expo-file-system";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -11,7 +17,24 @@ import {
     IOError,
     IOErrorEnum,
 } from "./errorHandler";
-import { MAX_DOWNLOAD_ID_LENGTH } from "./constants";
+import { MAX_DOWNLOAD_ID_LENGTH, PROGRESS_SCALING_FACTOR } from "./constants";
+import { toastInfo, toastSuccess } from "@/src/components/ToastStack";
+import { linearMap, round } from "./utils";
+
+export async function checkUnfinishedProgress() {
+    const progress = await AsyncStorage.getItem("download-progress");
+    if (progress === null) {
+        return null;
+    }
+    const { lastWritten, from, to } = JSON.parse(progress) as iDownloadProgress;
+    return linearMap(
+        round(new Date(lastWritten).getTime() / PROGRESS_SCALING_FACTOR, 0),
+        round(new Date(from).getTime() / PROGRESS_SCALING_FACTOR, 0),
+        round(new Date(to).getTime() / PROGRESS_SCALING_FACTOR, 0),
+        0,
+        100
+    );
+}
 
 function encode(str: string): Uint8Array {
     return new TextEncoder().encode(str);
@@ -44,13 +67,14 @@ function synthesizeFilename(downloadId: string, nonce: number = 0) {
 /**
  * @description Download Reports
  * @param downloadRequest DownloadRequest data
+ * @param mergeFailHandler Handler when merge fails
  * @param {boolean} _resume Resume the unfinished download (Should not be set by FE)
  * @param {boolean} _forcePick Force the file picker to open (Should not be set by FE)
- * @param mergeFailHandler Handler when merge fails
  * @returns {Promise<undefined | Error>}
  */
 export async function downloadReports(
     downloadRequest: iDownloadRequest,
+    progressHandler: (percent: number | null) => void,
     _resume: boolean = false,
     _forcePick: boolean = false,
     mergeFailHandler: (err: Error) => void = errorHandler
@@ -70,8 +94,6 @@ export async function downloadReports(
         });
     }
 
-    console.log("Starting Download!");
-
     let dirUri = "";
     if (progress === null) {
         try {
@@ -82,6 +104,7 @@ export async function downloadReports(
 
         progress = {
             downloadId: downloadRequest.downloadId,
+            from: downloadRequest.from,
             to: downloadRequest.to,
             nonce: 0,
             lastWritten: new Date(new Date(downloadRequest.from).getTime() - 1).toISOString(),
@@ -116,20 +139,33 @@ export async function downloadReports(
         writer.write(encode(readingsHeader.join(";") + "\n"));
     }
     setIsDownloading(true);
+    toastInfo({ message: "Starting Download!" });
+
+    const startTime = round(new Date(progress.from).getTime() / PROGRESS_SCALING_FACTOR, 0);
+    const endTime = round(new Date(progress.to).getTime() / PROGRESS_SCALING_FACTOR, 0);
+
+    setShouldContinue(true);
     return _startDownload(
         downloadRequest,
         async (readings: iReadings[]) => {
+            setIsDownloading(true);
             await writer.write(formatReadings(readings));
             const lastWritten = readings[readings.length - 1]!.timestamp;
             progress!.lastWritten = lastWritten;
 
-            console.log(lastWritten);
-
             await AsyncStorage.setItem("download-progress", JSON.stringify(progress));
+            progressHandler(
+                linearMap(
+                    round(new Date(lastWritten).getTime() / PROGRESS_SCALING_FACTOR, 0),
+                    startTime,
+                    endTime,
+                    0,
+                    100
+                )
+            );
         },
         async (downloadId: string) => {
-            console.log("Download for " + downloadId + " is finished!");
-
+            toastSuccess({ message: "Download is finished!" });
             await writer.close();
             setIsDownloading(false);
             const resp = await mergeDownloads(progress, dirUri);
@@ -138,6 +174,7 @@ export async function downloadReports(
                 return;
             }
             await AsyncStorage.removeItem("download-progress");
+            progressHandler(null);
         }
     );
 }
@@ -149,6 +186,7 @@ export async function downloadReports(
  * @returns {Promise<Error | undefined>}
  */
 export async function resumeDownload(
+    progressHandler: (progress: number | null) => void,
     _forcePick: boolean = false,
     mergeFailHandler: (err: Error) => void = errorHandler
 ): Promise<undefined | Error> {
@@ -165,12 +203,14 @@ export async function resumeDownload(
     const progress: iDownloadProgress = JSON.parse(_progress!);
     progress.nonce++;
     await AsyncStorage.setItem("download-progress", JSON.stringify(progress));
+    toastInfo({ message: "Resuming Download!" });
     const resp = await downloadReports(
         {
             to: progress.to,
             from: new Date(new Date(progress.lastWritten).getTime() + 1).toISOString(),
             downloadId: progress.downloadId,
         },
+        progressHandler,
         true,
         _forcePick,
         mergeFailHandler
@@ -225,5 +265,15 @@ async function mergeDownloads(
 
     await writer.close();
 
-    console.log("Finish Merging!");
+    toastSuccess({ message: "Finish Merging!" });
+}
+
+export async function cancelDownloads() {
+    setShouldContinue(false);
+    const _progress = await AsyncStorage.getItem("download-progress");
+    setIsDownloading(false);
+    await AsyncStorage.removeItem("download-progress");
+    if (_progress === null) {
+        return new DownloadError(DownloadErrorEnum.NoUnfinishedDownload);
+    }
 }

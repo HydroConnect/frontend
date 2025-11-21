@@ -1,3 +1,4 @@
+import { toastError } from "@/src/components/ToastStack";
 import { MAX_DOWNLOAD_ID_LENGTH } from "./constants";
 
 export enum IOErrorEnum {
@@ -49,6 +50,7 @@ export class IOError extends Error {
 }
 export class DownloadError extends Error {
     metadata = {};
+    type: DownloadErrorEnum;
     constructor(type: DownloadErrorEnum, metadata?: any) {
         let message = "";
         switch (type) {
@@ -78,11 +80,12 @@ export class DownloadError extends Error {
         }
         super(message);
         Error.captureStackTrace(this, this.constructor);
+        this.type = type;
         this.metadata = metadata;
         this.name = this.constructor.name;
     }
 }
 
 export function errorHandler(err: Error) {
-    console.log(err);
+    toastError({ message: err.message });
 }

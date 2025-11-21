@@ -1,6 +1,5 @@
-import { View, ScrollView, useWindowDimensions, RefreshControl, Text } from "react-native";
-import React, { useContext, useEffect, useState } from "react";
-import { Typography } from "@/src/components/Typography";
+import { View, ScrollView, useWindowDimensions } from "react-native";
+import React, { useContext, useEffect } from "react";
 import QualityCard from "@/src/components/QualityCard";
 import Button from "@/src/components/Button";
 import { useRouter } from "expo-router";
@@ -9,11 +8,11 @@ import { fetchData } from "@/lib/rest";
 import { percentToLevel, scorePH, scoreTDS, scoreTurbidity } from "@/lib/chemFormula";
 import { ReadingCTX } from "@/lib/contexts/readingCTX";
 import { RefreshableScreen } from "@/src/components/RefreshableScreen";
-import { ConnectionCTX } from "@/lib/contexts/connectionCTX";
+import SuhuCard from "./components/SuhuCard";
+import PageTitle from "@/src/components/PageTitle";
 
 const WaterQuality = () => {
     const { reading, setReading } = useContext(ReadingCTX)!;
-    const { connection } = useContext(ConnectionCTX)!;
 
     const router = useRouter();
     const { height } = useWindowDimensions();
@@ -30,10 +29,8 @@ const WaterQuality = () => {
                     className="flex-1 pt-[5%] px-[8%]"
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={{ paddingBottom: navbarPadding }}>
-                    <Typography variant="h3" weight="semibold" className="pb-[15%]">
-                        <Text>Kualitas Air</Text>
-                        {connection ? <Text>(Connected)</Text> : <Text>(Disconnected)</Text>}
-                    </Typography>
+                    <PageTitle title="Kualitas Air" className="mb-[45px]" />
+
                     <View className="flex flex-col items-center justify-center gap-[5%] mx-2">
                         <QualityCard
                             label="Turbiditas"
@@ -42,16 +39,25 @@ const WaterQuality = () => {
                                     ? null
                                     : percentToLevel(scoreTurbidity(reading!.turbidity))
                             }
+                            customPillText={`PPM ${reading === null ? null : reading!.turbidity}`}
+                            description="Indikator dan tingkat turbiditas (PPM)"
                         />
                         <QualityCard
                             label="Keasaman"
                             level={reading === null ? null : percentToLevel(scorePH(reading!.pH))}
+                            customPillText={`pH ${reading === null ? null : reading!.pH}`}
+                            description="Indikator dan tingkat keasaman (pH)"
                         />
                         <QualityCard
                             label="Kekeruhan"
                             level={reading === null ? null : percentToLevel(scoreTDS(reading!.tds))}
+                            customPillText={`${reading === null ? null : reading!.tds} NTU`}
+                            description="Indikator dan tingkat kekeruhan (NTU)"
                         />
-                        <QualityCard label="Suhu" level={reading === null ? null : 5} />
+                        <SuhuCard
+                            label="Suhu"
+                            temp={reading === null ? null : reading!.temperature}
+                        />
                     </View>
                     <View className="flex items-center justify-center">
                         <Button
