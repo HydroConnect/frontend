@@ -55,5 +55,19 @@ export async function isFirstTime(): Promise<boolean> {
 }
 
 export function getHourMinute(num: number) {
-    return [Math.floor(num), Math.round(num*60) % 60];
+    return [Math.floor(num), Math.round(num * 60) % 60];
+}
+
+export function linearMap(
+    value: number,
+    fromMin: number,
+    fromMax: number,
+    toMin: number,
+    toMax: number,
+    invert: boolean = false
+): number {
+    if (invert) {
+        toMax = [toMin, (toMin = toMax)][0]!;
+    }
+    return toMin + ((value - fromMin) / (fromMax - fromMin)) * (toMax - toMin);
 }

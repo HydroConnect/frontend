@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { View, ScrollView, useWindowDimensions } from "react-native";
+import { View, ScrollView, useWindowDimensions, Text } from "react-native";
 import Button from "@/src/components/Button";
 import { useRouter } from "expo-router";
 import Entypo from "@expo/vector-icons/Entypo";
@@ -10,24 +10,52 @@ import { ReadingCTX } from "@/lib/contexts/readingCTX";
 import { RefreshableScreen } from "@/src/components/RefreshableScreen";
 import PageTitle from "@/src/components/PageTitle";
 import RangeSelectionModal from "./components/CSVModal";
-import { downloadReports } from "@/lib/downloadReports";
-import { getMidnightDate } from "@/lib/utils";
-import { errorHandler } from "@/lib/errorHandler";
+import {
+    cancelDownloads,
+    checkUnfinishedProgress,
+    downloadReports,
+    resumeDownload,
+} from "@/lib/downloadReports";
+import { getMidnightDate, round } from "@/lib/utils";
+import { DownloadError, DownloadErrorEnum, errorHandler } from "@/lib/errorHandler";
+import { DownloadProgressCTX } from "@/lib/contexts/downloadProgressCTX";
+import ProgressBar from "./components/ProgressBar";
+import { toastInfo } from "@/src/components/ToastStack";
 
 const SystemQuality = () => {
     const [isRangeModalVisible, setRangeModalVisible] = useState(false);
+    const { downloadProgress, setDownloadProgress } = useContext(DownloadProgressCTX)!;
     const scrollViewRef = useRef<ScrollView>(null);
+
+    function progressHandler(progress: number | null) {
+        setDownloadProgress(progress);
+    }
 
     const handleSelectRange = async (startDate: Date, endDate: Date) => {
         endDate.setUTCDate(endDate.getDate() + 1);
-        const err = await downloadReports({
-            downloadId: `ReportHydroconnect_${new Date().toISOString()}`,
-            from: getMidnightDate(startDate).toISOString(),
-            to: getMidnightDate(endDate).toISOString(),
-        });
+        const err = await downloadReports(
+            {
+                downloadId: `${new Date().toISOString()}`,
+                from: getMidnightDate(startDate).toISOString(),
+                to: getMidnightDate(endDate).toISOString(),
+            },
+            progressHandler
+        );
 
         if (err instanceof Error) {
-            errorHandler(err);
+            if (
+                err instanceof DownloadError &&
+                (err.type === DownloadErrorEnum.UnfinishedDownload ||
+                    err.type === DownloadErrorEnum.DownloadInProgress)
+            ) {
+                const err2 = await resumeDownload(progressHandler);
+
+                if (err2 instanceof Error) {
+                    errorHandler(err2);
+                }
+            } else {
+                errorHandler(err);
+            }
         }
     };
     const router = useRouter();
@@ -38,6 +66,9 @@ const SystemQuality = () => {
 
     useEffect(() => {
         fetchData(setReading, null);
+        checkUnfinishedProgress().then((value) => {
+            setDownloadProgress(value);
+        });
     }, []);
 
     return (
@@ -92,6 +123,53 @@ const SystemQuality = () => {
                             title="Tanki"
                         />
                     </View>
+
+                    {downloadProgress !== null ? (
+                        <View className="flex justify-center items-center gap-5 bg-green-50 p-5 rounded-[27px]">
+                            <View className="flex-col justify-center items-center gap-3 w-full">
+                                <View className="bg-green-600 p-2 rounded-[18px]">
+                                    <Text className="text-gray-100 text-h3 font-bold">
+                                        {round(downloadProgress, 2)}
+                                    </Text>
+                                </View>
+                                <ProgressBar
+                                    progress={downloadProgress}
+                                    className="mt-2 w-full pl-4 pr-4"
+                                />
+                            </View>
+                            <View className="flex-row gap-4 justify-center items-center">
+                                <Button
+                                    label="Resume"
+                                    variant="primary"
+                                    onPress={async () => {
+                                        const err = await resumeDownload(progressHandler);
+                                        if (err instanceof Error) {
+                                            errorHandler(err);
+                                        }
+                                    }}
+                                    className="w-[40%]"
+                                    textVariant="label"
+                                />
+                                <Button
+                                    label="Cancel Download"
+                                    variant="primary"
+                                    onPress={async () => {
+                                        const err = await cancelDownloads();
+                                        if (err instanceof Error) {
+                                            errorHandler(err);
+                                        } else {
+                                            toastInfo({ message: "Cancelling Download!" });
+                                        }
+                                        setDownloadProgress(null);
+                                    }}
+                                    className="w-[50%] bg-red-600"
+                                    textVariant="label"
+                                />
+                            </View>
+                        </View>
+                    ) : (
+                        ""
+                    )}
 
                     <View className="mx-2 mt-2">
                         <Button

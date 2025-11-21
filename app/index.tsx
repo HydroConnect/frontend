@@ -15,12 +15,12 @@ const Index = () => {
             isFirstTime().then((firstTime) => {
                 if (firstTime) {
                     const timer = setTimeout(() => {
-                        router.push("/onboarding/onboarding1");
+                        router.replace("/onboarding/onboarding1");
                     }, 3000);
 
                     return () => clearTimeout(timer);
                 } else {
-                    router.push("/(tabs)/home");
+                    router.replace("/(tabs)/home");
                 }
             });
         }

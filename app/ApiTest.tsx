@@ -94,7 +94,7 @@ const ApiTest = () => {
                     <Button
                         title="IO /download-request"
                         onPress={async () => {
-                            const hasil = await downloadReports(downloadRequestSample);
+                            const hasil = await downloadReports(downloadRequestSample, () => {});
                             if (hasil instanceof Error) {
                                 console.log(hasil);
                             }
@@ -103,7 +103,7 @@ const ApiTest = () => {
                     <Button
                         title="IO /resume-request"
                         onPress={async () => {
-                            const hasil = await resumeDownload();
+                            const hasil = await resumeDownload(() => {});
                             if (hasil instanceof Error) {
                                 console.log(hasil);
                             }
@@ -112,7 +112,7 @@ const ApiTest = () => {
                     <Button
                         title="IO /resume-request (_forcePick)"
                         onPress={async () => {
-                            const hasil = await resumeDownload(true);
+                            const hasil = await resumeDownload(() => {}, true);
                             if (hasil instanceof Error) {
                                 console.log(hasil);
                             }

@@ -7,6 +7,15 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 let socket: Socket | undefined = undefined;
 let isDownloading = false;
+let shouldContinue = true;
+
+export function getShouldContinue() {
+    return shouldContinue;
+}
+
+export function setShouldContinue(input: boolean) {
+    shouldContinue = input;
+}
 
 /**
  * @description Get downloading status
@@ -32,9 +41,9 @@ export function isConnected(): boolean {
 
 function handleLostConnection(disconnectHandler: () => void) {
     disconnectHandler();
+    setIsDownloading(false);
     if (!socket!.active) {
         socket!.disconnect();
-        setIsDownloading(false);
         socket = undefined;
     }
 }
@@ -106,13 +115,20 @@ export function _startDownload(
             await resetDownloadState();
         }
     });
-    socket!.on("download-data", (readings: iReadings[], downloadId: string, ack: () => void) => {
-        if (downloadId !== downloadRequest.downloadId) {
-            return;
+    socket!.on(
+        "download-data",
+        (readings: iReadings[], downloadId: string, ack: (arg: any) => void) => {
+            if (downloadId !== downloadRequest.downloadId) {
+                return;
+            }
+            if (getShouldContinue()) {
+                downloadHandler(readings, downloadId);
+                ack(true);
+            } else {
+                ack(false);
+            }
         }
-        downloadHandler(readings, downloadId);
-        ack();
-    });
+    );
     socket.on("download-finish", (downloadId) => {
         if (downloadId !== downloadRequest.downloadId) {
             return;
