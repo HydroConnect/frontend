@@ -9,6 +9,7 @@ export enum DownloadErrorEnum {
     CancelPicking,
     NotFound,
     NoPermission,
+    DifferentFolder,
     DownloadInProgress,
     UnfinishedDownload,
     NoUnfinishedDownload,
@@ -68,6 +69,9 @@ export class DownloadError extends Error {
                 break;
             case DownloadErrorEnum.NoPermission:
                 message = "Require permission";
+                break;
+            case DownloadErrorEnum.DifferentFolder:
+                message = "Choosen folder differs than before: " + metadata.path;
                 break;
             case DownloadErrorEnum.UnfinishedDownload:
                 message = "There is unfinished download";
