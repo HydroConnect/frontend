@@ -49,7 +49,13 @@ const ApiTest = () => {
 
     return (
         <View className="flex w-[100%] h-[100%] relative justify-center items-center">
-            <ScrollView className="relative w-max h-maxflex items-center justify-center">
+            <ScrollView
+                contentContainerStyle={{
+                    position: "relative",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    display: "flex",
+                }}>
                 <View>
                     <Link href={"/"} push asChild>
                         <Text className="font-bold">Back</Text>

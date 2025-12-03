@@ -22,7 +22,8 @@
                 "monochromeImage": "./assets/images/icon-hc.png"
             },
             "edgeToEdgeEnabled": true,
-            "predictiveBackGestureEnabled": false
+            "predictiveBackGestureEnabled": false,
+            "googleServicesFile": "./google-services.json"
         },
         "web": {
             "bundler": "metro",
@@ -46,7 +47,8 @@
             ],
             "expo-font",
             "expo-web-browser",
-            "expo-audio"
+            "expo-audio",
+            "@react-native-firebase/app"
         ],
         "experiments": {
             "typedRoutes": true,

@@ -2,6 +2,7 @@ import { Platform } from "react-native";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
+import type { iNotification } from "@/schemas/notifications";
 
 Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -80,3 +81,7 @@ export async function registerForPushNotificationsAsync() {
         handleRegistrationError("Must use physical device for push notifications");
     }
 }
+
+export async function saveNotification(notification: iNotification) {}
+
+export async function getNotification() {}
