@@ -65,7 +65,8 @@ const PumpDurationChart: React.FC<{ summaries: iSummaries[] | null; [key: string
                 {summaries.toReversed().map(({ uptime, timestamp }, index) => {
                     // 5. Hitung tinggi bar-nya
                     const hourUptime = round(uptime / 3600, SUMMARY_GRAPH_PRECISION);
-                    const barHeight = (hourUptime / maxHour) * CHART_MAX_HEIGHT_PX;
+                    const barHeight =
+                        Math.max(2, (hourUptime / maxHour) * CHART_MAX_HEIGHT_PX) || 2;
                     const [hourUp, minUp] = getHourMinute(hourUptime);
 
                     return (
