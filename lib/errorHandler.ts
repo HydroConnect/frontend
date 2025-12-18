@@ -15,6 +15,10 @@ export enum DownloadErrorEnum {
     NoUnfinishedDownload,
     Unknown,
 }
+export enum SystemErrorEnum {
+    DatabaseInitError,
+    DatabaseExecError,
+}
 export class HttpError extends Error {
     status: number;
 
@@ -86,6 +90,22 @@ export class DownloadError extends Error {
         Error.captureStackTrace(this, this.constructor);
         this.type = type;
         this.metadata = metadata;
+        this.name = this.constructor.name;
+    }
+}
+export class SystemError extends Error {
+    constructor(type: SystemErrorEnum) {
+        let message = "";
+        switch (type) {
+            case SystemErrorEnum.DatabaseInitError:
+                message = "Error in initializing database";
+                break;
+            case SystemErrorEnum.DatabaseExecError:
+                message = "Error in executing database command";
+                break;
+        }
+        super(message);
+        Error.captureStackTrace(this, this.constructor);
         this.name = this.constructor.name;
     }
 }
