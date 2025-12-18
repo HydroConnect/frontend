@@ -2,7 +2,14 @@ import { Platform } from "react-native";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
-import type { iNotification } from "@/schemas/notifications";
+import {
+    usageNotificationSample,
+    type iUsageNotification,
+    type iUsageNotificationSQL,
+} from "@/schemas/usageNotification";
+import { db } from "./sqlite";
+import { USAGE_NOTIFICATION_PAGING_LIMIT } from "./constants";
+import { SystemError, SystemErrorEnum } from "./errorHandler";
 
 Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -82,6 +89,50 @@ export async function registerForPushNotificationsAsync() {
     }
 }
 
-export async function saveNotification(notification: iNotification) {}
+export async function getNotifications(
+    latest: null | number
+): Promise<[iUsageNotification[], number]> {
+    if (db === undefined) {
+        throw new SystemError(SystemErrorEnum.DatabaseInitError);
+    }
+    try {
+        let qRes: iUsageNotificationSQL[];
+        latest = null;
+        console.log(latest);
+        if (latest === null) {
+            qRes = await db.getAllAsync(
+                `SELECT * FROM notifications ORDER BY notification_id LIMIT ?`,
+                USAGE_NOTIFICATION_PAGING_LIMIT
+            );
+        } else {
+            qRes = await db.getAllAsync(
+                `SELECT * FROM notifications WHERE notification_id < $from AND notification_id > $to ORDER BY notification_id `,
+                { $from: latest, $to: latest - USAGE_NOTIFICATION_PAGING_LIMIT }
+            );
+        }
+        console.log(qRes);
+        return [[usageNotificationSample], 1];
+    } catch (err) {
+        console.log(err);
+        throw new SystemError(SystemErrorEnum.DatabaseExecError);
+    }
+}
 
-export async function getNotification() {}
+export async function saveNotification(notification: iUsageNotification) {
+    if (db === undefined) {
+        throw new SystemError(SystemErrorEnum.DatabaseInitError);
+    }
+    try {
+        const qRes = await db.runAsync(
+            `INSERT INTO notifications (timestamp, type) VALUES ($timestamp, $type)`,
+            { $timestamp: notification.timestamp, $type: notification.type }
+        );
+        console.log(qRes);
+    } catch {
+        throw new SystemError(SystemErrorEnum.DatabaseExecError);
+    }
+}
+
+export async function resetNotificationDB() {}
+
+export async function deleteNOldest(n: number) {}
