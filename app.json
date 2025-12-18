@@ -48,7 +48,8 @@
             "expo-font",
             "expo-web-browser",
             "expo-audio",
-            "@react-native-firebase/app"
+            "@react-native-firebase/app",
+            "expo-sqlite"
         ],
         "experiments": {
             "typedRoutes": true,
