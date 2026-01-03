@@ -12,6 +12,7 @@ import * as Notifications from "expo-notifications";
 import {
     getNotifications,
     registerForPushNotificationsAsync,
+    resetNotificationDB,
     saveNotification,
     sendPushNotification,
 } from "@/lib/notifications";
@@ -181,6 +182,7 @@ const ApiTest = () => {
                 <Button
                     title="Press to Send Notification"
                     onPress={async () => {
+                        console.log("Pressed!");
                         await sendPushNotification(expoPushToken);
                     }}
                 />
@@ -212,14 +214,15 @@ const ApiTest = () => {
                         await saveNotification(usageNotificationSample);
                     }}
                 />
-                <Text>{latestNPointer}</Text>
-                <View>
-                    {/* {myNotifs.map((val, index) => {
-                        return <></>;
-                    })} */}
-                </View>
+                <Button
+                    title="Reset Notification"
+                    onPress={async () => {
+                        await resetNotificationDB();
+                    }}
+                />
+                <Text>Latest Pointer: {latestNPointer}</Text>
             </View>
-            <View className="relative h-20"></View>
+            <View className="relative h-[500px]"></View>
         </ScrollView>
         // </View>
     );

@@ -29,15 +29,19 @@ export async function sendPushNotification(expoPushToken: string) {
         data: { someData: "goes here" },
     };
 
-    await fetch("https://exp.host/--/api/v2/push/send", {
-        method: "POST",
-        headers: {
-            Accept: "application/json",
-            "Accept-encoding": "gzip, deflate",
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(message),
-    });
+    try {
+        await fetch("https://exp.host/--/api/v2/push/send", {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Accept-encoding": "gzip, deflate",
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(message),
+        });
+    } catch (err) {
+        console.log(err);
+    }
 }
 
 function handleRegistrationError(errorMessage: string) {
@@ -91,27 +95,29 @@ export async function registerForPushNotificationsAsync() {
 
 export async function getNotifications(
     latest: null | number
-): Promise<[iUsageNotification[], number]> {
+): Promise<[iUsageNotification[], null | number]> {
     if (db === undefined) {
         throw new SystemError(SystemErrorEnum.DatabaseInitError);
     }
     try {
         let qRes: iUsageNotificationSQL[];
-        latest = null;
-        console.log(latest);
         if (latest === null) {
             qRes = await db.getAllAsync(
-                `SELECT * FROM notifications ORDER BY notification_id LIMIT ?`,
+                `SELECT * FROM notifications ORDER BY notification_id DESC LIMIT ?`,
                 USAGE_NOTIFICATION_PAGING_LIMIT
             );
         } else {
             qRes = await db.getAllAsync(
-                `SELECT * FROM notifications WHERE notification_id < $from AND notification_id > $to ORDER BY notification_id `,
+                `SELECT * FROM notifications WHERE notification_id < $from AND notification_id > $to ORDER BY notification_id DESC`,
                 { $from: latest, $to: latest - USAGE_NOTIFICATION_PAGING_LIMIT }
             );
         }
+
+        if (qRes.length !== 0) {
+            latest = qRes[qRes.length - 1]!.notification_id;
+        }
         console.log(qRes);
-        return [[usageNotificationSample], 1];
+        return [qRes, latest];
     } catch (err) {
         console.log(err);
         throw new SystemError(SystemErrorEnum.DatabaseExecError);
@@ -127,12 +133,35 @@ export async function saveNotification(notification: iUsageNotification) {
             `INSERT INTO notifications (timestamp, type) VALUES ($timestamp, $type)`,
             { $timestamp: notification.timestamp, $type: notification.type }
         );
+        console.log(qRes.changes, qRes.lastInsertRowId);
+    } catch {
+        throw new SystemError(SystemErrorEnum.DatabaseExecError);
+    }
+}
+
+export async function resetNotificationDB() {
+    if (db === undefined) {
+        throw new SystemError(SystemErrorEnum.DatabaseInitError);
+    }
+    try {
+        const qRes = await db.runAsync(`DELETE FROM notifications`);
         console.log(qRes);
     } catch {
         throw new SystemError(SystemErrorEnum.DatabaseExecError);
     }
 }
 
-export async function resetNotificationDB() {}
-
-export async function deleteNOldest(n: number) {}
+export async function deleteNOldest(n: number) {
+    if (db === undefined) {
+        throw new SystemError(SystemErrorEnum.DatabaseInitError);
+    }
+    try {
+        const qRes = await db.runAsync(
+            `DELETE FROM notifications WHERE notification_id IN (SELECT notification_id FROM notifications ORDER BY notification_id ASC LIMIT $n)`,
+            { $n: n }
+        );
+        console.log(qRes);
+    } catch {
+        throw new SystemError(SystemErrorEnum.DatabaseExecError);
+    }
+}
