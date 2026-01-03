@@ -4,7 +4,13 @@ import { fetchData } from "@/lib/rest";
 import { useCallback, useContext, useState } from "react";
 import { RefreshControl, ScrollView } from "react-native";
 
-export function RefreshableScreen({ children }: any) {
+type RefreshableScreenProps = {
+    children?: React.ReactNode;
+    fun?: () => void;
+    [key: string]: any;
+};
+
+export function RefreshableScreen({ children, fun, ...props }: RefreshableScreenProps) {
     const { setReading } = useContext(ReadingCTX)!;
     const { setSummaries } = useContext(SummariesCTX)!;
 
@@ -14,12 +20,16 @@ export function RefreshableScreen({ children }: any) {
         setRefreshing(true);
         await fetchData(setReading, setSummaries);
         setRefreshing(false);
+        if (fun) {
+            fun();
+        }
     }, [setReading, setRefreshing, setSummaries]);
 
     return (
         <ScrollView
             contentContainerStyle={{ flexGrow: 1 }}
             className="w-full h-full m-0 p-0 box-content bg-white"
+            {...props}
             refreshControl={
                 <RefreshControl
                     refreshing={refreshing}

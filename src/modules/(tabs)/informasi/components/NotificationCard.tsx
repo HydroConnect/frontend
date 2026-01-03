@@ -1,57 +1,32 @@
 import React from "react";
 import { View } from "react-native";
 import { Typography } from "@/src/components/Typography";
+import type { iUsageNotification } from "@/schemas/usageNotification";
+import LogoAirNyala from "@/assets/images/informasi/LogoAirNyala";
+import LogoAirMati from "@/assets/images/informasi/LogoAirMati";
+import { formatDate, getJam } from "@/lib/utils";
 
 interface NotificationCardProps {
-    title: string;
-    timestamp: Date | string; // Bisa menerima Date object atau string
-    icon: React.ReactNode;
+    usageNotification: iUsageNotification;
 }
 
-// Fungsi untuk format tanggal dan waktu
-const formatTimestamp = (timestamp: Date | string): string => {
-    const date = typeof timestamp === "string" ? new Date(timestamp) : timestamp;
-
-    const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
-    const months = [
-        "Januari",
-        "Februari",
-        "Maret",
-        "April",
-        "Mei",
-        "Juni",
-        "Juli",
-        "Agustus",
-        "September",
-        "Oktober",
-        "November",
-        "Desember",
-    ];
-
-    const dayName = days[date.getDay()];
-    const day = date.getDate();
-    const month = months[date.getMonth()];
-    const year = date.getFullYear();
-    const hours = String(date.getHours()).padStart(2, "0");
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-
-    return `${dayName}, ${day} ${month} ${year}, Pukul ${hours}.${minutes}`;
-};
-
-const NotificationCard: React.FC<NotificationCardProps> = ({ title, timestamp, icon }) => {
-    const formattedTime = formatTimestamp(timestamp);
-
+const NotificationCard: React.FC<NotificationCardProps> = ({ usageNotification }) => {
+    const date = new Date(usageNotification.timestamp);
     return (
         <View className="flex-row gap-1 items-center bg-[#EDEDED] rounded-xl p-4 mb-[20px]">
             <View className={`w-15 h-15 rounded-full items-center justify-center mr-3`}>
-                {icon}
+                {usageNotification.type ? (
+                    <LogoAirNyala width={50} height={50} />
+                ) : (
+                    <LogoAirMati width={50} height={50} />
+                )}
             </View>
             <View className="flex-1">
                 <Typography variant="title" weight="semibold" className="mb-1">
-                    {title}
+                    {usageNotification.type ? "Pompa Dinyalakan" : "Pompa Dimatikan"}
                 </Typography>
                 <Typography variant="label" weight="semibold" className="text-neutral-600">
-                    {formattedTime}
+                    {`${formatDate(date)} (${getJam(date)})`}
                 </Typography>
             </View>
         </View>

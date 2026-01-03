@@ -25,6 +25,14 @@ export function getJam(date: Date): string {
         .replace(":", ".");
 }
 
+export function isSameDay(a: Date, b: Date): boolean {
+    return (
+        a.getFullYear() === b.getFullYear() &&
+        a.getMonth() === b.getMonth() &&
+        a.getDate() === b.getDate()
+    );
+}
+
 export function getMidnightDate(date: Date): Date {
     date.setUTCHours(0, 0, 0, 1);
     return date;
