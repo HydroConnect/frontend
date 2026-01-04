@@ -27,6 +27,7 @@ export default function RootLayout() {
     const [reading, setReading] = useState<null | iReadings>(null);
     const [summaries, setSummaries] = useState<null | iSummaries[]>(null);
     const [downloadProgress, setDownloadProgress] = useState<null | number>(null);
+
     const [fontsLoaded, fontError] = useFonts({
         "SourceSansPro-Regular": require("../assets/fonts/source-sans-pro.regular.ttf"),
         "SourceSansPro-Semibold": require("../assets/fonts/source-sans-pro.semibold.ttf"),

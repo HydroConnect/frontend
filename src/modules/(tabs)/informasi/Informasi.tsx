@@ -9,16 +9,23 @@ import { useRouter } from "expo-router";
 import { debounce, formatDate, isSameDay } from "@/lib/utils";
 import { RefreshableScreen } from "@/src/components/RefreshableScreen";
 import PageTitle from "@/src/components/PageTitle";
-import { getNotifications } from "@/lib/notifications";
+import {
+    disableNotifications,
+    enableNotification,
+    getIsNotificationEnabled,
+    getNotifications,
+} from "@/lib/notifications";
 import type { iUsageNotification } from "@/schemas/usageNotification";
+import { errorHandler } from "@/lib/errorHandler";
 
 const SCROLL_PADDING_BOTTOM = 100;
 let shouldScroll = false;
 
 const Informasi = () => {
     const router = useRouter();
-    const [usageNotifications, setUsageNotifications] = useState<iUsageNotification[]>([]);
     const [latest, setLatest] = useState<number | null>(null);
+    const [usageNotifications, setUsageNotifications] = useState<iUsageNotification[]>([]);
+    const [isNEnabled, setIsNEnabled] = useState<boolean>(false);
 
     let timeout = {};
     const yesterday = new Date();
@@ -26,7 +33,15 @@ const Informasi = () => {
     const today = new Date();
 
     useEffect(() => {
+        getIsNotificationEnabled().then((val) => {
+            setIsNEnabled(val);
+        });
         getNotifications(null).then((data) => {
+            if (data instanceof Error) {
+                errorHandler(data);
+                return;
+            }
+
             setUsageNotifications(data[0]);
             setLatest(data[1]);
             shouldScroll = true;
@@ -37,6 +52,10 @@ const Informasi = () => {
         <RefreshableScreen
             fun={() => {
                 getNotifications(null).then((data) => {
+                    if (data instanceof Error) {
+                        errorHandler(data);
+                        return;
+                    }
                     setUsageNotifications(data[0]);
                     setLatest(data[1]);
                     shouldScroll = true;
@@ -48,13 +67,20 @@ const Informasi = () => {
                     nativeEvent.contentOffset.y + nativeEvent.layoutMeasurement.height >=
                         nativeEvent.contentSize.height - SCROLL_PADDING_BOTTOM
                 ) {
+                    shouldScroll = false;
                     getNotifications(latest).then((data) => {
+                        if (data instanceof Error) {
+                            errorHandler(data);
+                            return;
+                        }
+
                         if (data[0].length === 0) {
                             shouldScroll = false;
                             return;
                         }
                         setUsageNotifications([...usageNotifications, ...data[0]]);
                         setLatest(data[1]);
+                        shouldScroll = true;
                     });
                 }
             }}>
@@ -125,6 +151,35 @@ const Informasi = () => {
 
                     {/* Pemberitahuan Section */}
                     <View className="mb-20">
+                        <View className="flex flex-row justify-center gap-3 mb-10">
+                            {!isNEnabled ? (
+                                <Button
+                                    label="Nyalakan Notif"
+                                    variant="primary"
+                                    textVariant="body"
+                                    textWeight="semibold"
+                                    className="w-[45%]"
+                                    icon={(props) => <></>}
+                                    onPress={async () => {
+                                        await enableNotification();
+                                        setIsNEnabled(await getIsNotificationEnabled());
+                                    }}
+                                />
+                            ) : (
+                                <Button
+                                    label="Matikan Notif"
+                                    variant="secondary"
+                                    textVariant="body"
+                                    textWeight="semibold"
+                                    className="w-[45%]"
+                                    icon={(props) => <></>}
+                                    onPress={async () => {
+                                        await disableNotifications();
+                                        setIsNEnabled(await getIsNotificationEnabled());
+                                    }}
+                                />
+                            )}
+                        </View>
                         <Typography variant="h3" weight="semibold" className="mb-[12px]">
                             Pemberitahuan
                         </Typography>

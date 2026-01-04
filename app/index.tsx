@@ -11,6 +11,7 @@ const Index = () => {
     const router = useRouter();
 
     useEffect(() => {
+        //@ts-ignore Ignore
         if (ENVIRONMENT_STATUS === "PRODUCTION") {
             isFirstTime().then((firstTime) => {
                 if (firstTime) {
@@ -26,6 +27,7 @@ const Index = () => {
         }
     }, []);
 
+    //@ts-ignore I'ts hardcoded
     if (ENVIRONMENT_STATUS === "PRODUCTION") {
         return (
             <SafeAreaView className="flex-1 bg-black" edges={["bottom"]}>

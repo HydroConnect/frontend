@@ -2,15 +2,20 @@ import HCtext from "@/assets/images/onboarding/HCtext";
 import Button from "@/src/components/Button";
 import { Typography } from "@/src/components/Typography";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useEffect } from "react";
 import { Image, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { debounce } from "@/lib/utils";
+import { enableNotification } from "@/lib/notifications";
 
 const OnboardingScreen1 = () => {
     const router = useRouter();
 
     let timeout = {};
+
+    useEffect(() => {
+        enableNotification();
+    }, []);
 
     return (
         <View className="flex-1 bg-white">

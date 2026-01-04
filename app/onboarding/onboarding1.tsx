@@ -1,19 +1,15 @@
 import OnboardingScreen1 from "@/src/modules/onboarding/onboarding1";
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { BackHandler, ToastAndroid, Platform, Alert } from "react-native";
+import { BackHandler, ToastAndroid, Platform } from "react-native";
 import { useFocusEffect } from "expo-router";
-
-const status = "PROD";
 
 const Onboarding1 = () => {
     const backPressedOnce = useRef(false);
 
     useFocusEffect(
         React.useCallback(() => {
-            if (status !== "PROD") return;
-
             const onBackPress = () => {
                 if (backPressedOnce.current) {
                     // Keluar dari aplikasi

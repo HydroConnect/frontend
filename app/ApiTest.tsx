@@ -11,14 +11,12 @@ import { Button, ScrollView, Text, View } from "react-native";
 import * as Notifications from "expo-notifications";
 import {
     getNotifications,
-    clearNotification,
-    saveNotification,
-    getNotificationsCount,
     enableNotification,
     disableNotifications,
     expoPushToken,
+    getIsNotificationEnabled,
 } from "@/lib/notifications";
-import { usageNotificationSample, type iUsageNotification } from "@/schemas/usageNotification";
+import { type iUsageNotification } from "@/schemas/usageNotification";
 
 const ApiTest = () => {
     const [log, setLog] = useState<any>();
@@ -196,7 +194,9 @@ const ApiTest = () => {
                 <Button
                     title="Get Notification (Latest)"
                     onPress={async () => {
-                        const [nowNotifs, nowPointer] = await getNotifications(latestNPointer);
+                        const [nowNotifs, nowPointer] = (await getNotifications(
+                            latestNPointer
+                        )) as [iUsageNotification[], number];
                         setMyNotifs(nowNotifs);
                         setLatestNPointer(nowPointer);
                     }}
@@ -205,18 +205,6 @@ const ApiTest = () => {
                     title="Reset Latest"
                     onPress={async () => {
                         setLatestNPointer(null);
-                    }}
-                />
-                <Button
-                    title="Save Notification"
-                    onPress={async () => {
-                        await saveNotification(usageNotificationSample);
-                    }}
-                />
-                <Button
-                    title="Get Notifications Count"
-                    onPress={async () => {
-                        console.log(await getNotificationsCount());
                     }}
                 />
                 <Button
@@ -234,9 +222,9 @@ const ApiTest = () => {
                     }}
                 />
                 <Button
-                    title="Clear Notification"
+                    title="Get is Notification enabled"
                     onPress={async () => {
-                        await clearNotification();
+                        console.log(await getIsNotificationEnabled());
                     }}
                 />
                 <Button
