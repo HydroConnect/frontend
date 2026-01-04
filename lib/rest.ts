@@ -1,11 +1,17 @@
 import { type iSummaries } from "@/schemas/summaries";
-import { BACKEND_API_BASE_URL, BACKEND_API_REST_VERSION, FETCH_REST_TIME_MS } from "./constants";
+import {
+    BACKEND_API_BASE_URL,
+    BACKEND_API_REST_VERSION,
+    FETCH_REST_TIME_MS,
+    PANDUAN_EXPIRED_D,
+} from "./constants";
 import { HttpError } from "./errorHandler";
 import type { iReadings } from "@/schemas/readings";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { globals } from "./globals";
 import NetInfo from "@react-native-community/netinfo";
 import { toastError } from "@/src/components/ToastStack";
+import type { iPanduanData } from "@/schemas/panduanData";
 
 /**
  * @description Get last 7 days summaries
@@ -114,5 +120,39 @@ export async function fetchData(
         globals.GLastFetch = new Date();
     } else {
         toastError({ message: "Error fetching" });
+    }
+}
+
+export async function getPanduanData(
+    _forceFetch: boolean = false
+): Promise<iPanduanData[] | Error> {
+    const hasil = await AsyncStorage.getItem("panduanData");
+    if (
+        _forceFetch ||
+        hasil === null ||
+        (hasil !== null &&
+            Date.now() - JSON.parse(hasil).timestamp >= PANDUAN_EXPIRED_D * 1000 * 60 * 60 * 24)
+    ) {
+        try {
+            const result = await fetch(
+                `${BACKEND_API_BASE_URL}/rest/${BACKEND_API_REST_VERSION}/panduan`
+            );
+            if (result.status !== 200) {
+                throw "Connection Error";
+            }
+            const json = await result.json();
+            await AsyncStorage.setItem(
+                "panduanData",
+                JSON.stringify({ timestamp: Date.now(), data: json })
+            );
+            return json;
+        } catch (err) {
+            if (err === "Connection Error") {
+                return new HttpError(400);
+            }
+            return new HttpError(500);
+        }
+    } else {
+        return JSON.parse(hasil).data;
     }
 }
