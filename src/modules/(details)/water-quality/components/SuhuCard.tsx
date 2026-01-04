@@ -49,10 +49,6 @@ const SuhuCard: React.FC<SuhuCardProps> = ({ label, temp }) => {
         return <CardShimmer />;
     }
 
-    const handleInfoPress = () => {
-        console.log("Tombol info Kualitas Air ditekan");
-    };
-
     return (
         <View className="w-full rounded-3xl p-4 bg-green-50">
             <View className="flex-row items-center justify-between">

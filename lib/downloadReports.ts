@@ -176,8 +176,7 @@ export async function downloadReports(
             synthesizeFilename(downloadRequest.downloadId, progress.nonce + 1)
         );
         wStream = outFile.writableStream();
-    } catch (err) {
-        console.log(err);
+    } catch {
         return new DownloadError(DownloadErrorEnum.NoPermission, { path: progress.dirUri });
     }
     const writer = wStream.getWriter();

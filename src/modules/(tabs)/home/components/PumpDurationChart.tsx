@@ -19,10 +19,6 @@ const PumpDurationChart: React.FC<{ summaries: iSummaries[] | null; [key: string
         return <CardShimmer />;
     }
 
-    const handleInfoPress = () => {
-        console.log("Tombol info Lama Pompa ditekan");
-    };
-
     // Nilai seconds tertinggi untuk nentuin skala
     let maxHour = 0;
     for (let i = 0; i < summaries.length; i++) {
