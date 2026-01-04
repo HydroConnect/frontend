@@ -7,6 +7,7 @@ import { Image, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { debounce } from "@/lib/utils";
 import { enableNotification } from "@/lib/notifications";
+import { errorHandler } from "@/lib/errorHandler";
 
 const OnboardingScreen1 = () => {
     const router = useRouter();
@@ -14,7 +15,11 @@ const OnboardingScreen1 = () => {
     let timeout = {};
 
     useEffect(() => {
-        enableNotification();
+        enableNotification().then((err) => {
+            if (err instanceof Error) {
+                errorHandler(err);
+            }
+        });
     }, []);
 
     return (

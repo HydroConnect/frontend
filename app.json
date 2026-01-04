@@ -32,7 +32,12 @@
         },
         "plugins": [
             "expo-router",
-            "expo-notifications",
+            [
+                "expo-notifications",
+                {
+                    "icon": "./assets/images/icon-hc.png"
+                }
+            ],
             [
                 "expo-splash-screen",
                 {

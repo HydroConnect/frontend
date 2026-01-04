@@ -117,7 +117,7 @@ export async function disableNotifications() {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ expoPushToken: expoPushToken }),
+                body: JSON.stringify({ token: expoPushToken }),
             }
         );
         if (result.status !== 200) {

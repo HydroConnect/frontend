@@ -161,7 +161,10 @@ const Informasi = () => {
                                     className="w-[45%]"
                                     icon={(props) => <></>}
                                     onPress={async () => {
-                                        await enableNotification();
+                                        const err = await enableNotification();
+                                        if (err instanceof Error) {
+                                            errorHandler(err);
+                                        }
                                         setIsNEnabled(await getIsNotificationEnabled());
                                     }}
                                 />
@@ -174,7 +177,10 @@ const Informasi = () => {
                                     className="w-[45%]"
                                     icon={(props) => <></>}
                                     onPress={async () => {
-                                        await disableNotifications();
+                                        const err = await disableNotifications();
+                                        if (err instanceof Error) {
+                                            errorHandler(err);
+                                        }
                                         setIsNEnabled(await getIsNotificationEnabled());
                                     }}
                                 />
