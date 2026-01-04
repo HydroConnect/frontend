@@ -21,7 +21,10 @@ export async function getSummaries(): Promise<iSummaries[] | Error> {
         }
         const json = await result.json();
         return json;
-    } catch {
+    } catch (err) {
+        if (err === "Connection Error") {
+            return new HttpError(400);
+        }
         return new HttpError(500);
     }
 }
@@ -40,7 +43,10 @@ export async function getLatest(): Promise<iReadings | Error> {
         }
         const json = await result.json();
         return json;
-    } catch {
+    } catch (err) {
+        if (err === "Connection Error") {
+            return new HttpError(400);
+        }
         return new HttpError(500);
     }
 }
@@ -107,6 +113,6 @@ export async function fetchData(
     if (isSuccess) {
         globals.GLastFetch = new Date();
     } else {
-        toastError({message:"Error fetching"});
+        toastError({ message: "Error fetching" });
     }
 }
