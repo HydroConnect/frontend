@@ -18,6 +18,8 @@ export enum DownloadErrorEnum {
 export enum SystemErrorEnum {
     DatabaseInitError,
     DatabaseExecError,
+    NotificationProjectIdNotFound,
+    NotRealDevice,
 }
 export class HttpError extends Error {
     status: number;
@@ -102,6 +104,12 @@ export class SystemError extends Error {
                 break;
             case SystemErrorEnum.DatabaseExecError:
                 message = "Error in executing database command";
+                break;
+            case SystemErrorEnum.NotificationProjectIdNotFound:
+                message = "Project ID not founc (app error)";
+                break;
+            case SystemErrorEnum.NotRealDevice:
+                message = "Some feature can only be run on real device not simulator";
                 break;
         }
         super(message);

@@ -10,3 +10,4 @@ export const SUMMARY_GRAPH_PRECISION = 2;
 export const ENVIRONMENT_STATUS = "PRODUCTION"; // On Development change this to "DEVELOPMENT"
 export const PROGRESS_SCALING_FACTOR = 2000;
 export const USAGE_NOTIFICATION_PAGING_LIMIT = 5;
+export const MAX_NOTIFICATIONS_COUNT = 8;

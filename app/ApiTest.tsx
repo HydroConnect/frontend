@@ -11,17 +11,18 @@ import { Button, ScrollView, Text, View } from "react-native";
 import * as Notifications from "expo-notifications";
 import {
     getNotifications,
-    registerForPushNotificationsAsync,
-    resetNotificationDB,
+    clearNotification,
     saveNotification,
-    sendPushNotification,
+    getNotificationsCount,
+    enableNotification,
+    disableNotifications,
+    expoPushToken,
 } from "@/lib/notifications";
 import { usageNotificationSample, type iUsageNotification } from "@/schemas/usageNotification";
 
 const ApiTest = () => {
     const [log, setLog] = useState<any>();
     const [summary, setSummary] = useState<iSummaries[] | null>(null);
-    const [expoPushToken, setExpoPushToken] = useState("");
     const [latestNPointer, setLatestNPointer] = useState<number | null>(null);
     const [notification, setNotification] = useState<Notifications.Notification | undefined>(
         undefined
@@ -33,38 +34,21 @@ const ApiTest = () => {
         setLog(JSON.stringify(input));
     }
 
+    function myNotifHandler(notification: Notifications.Notification) {
+        console.log(notification);
+        setNotification(notification);
+    }
+
     useEffect(() => {
-        registerForPushNotificationsAsync()
-            .then((token) => setExpoPushToken(token ?? ""))
-            .catch((error: any) => setExpoPushToken(`${error}`));
-
-        const notificationListener = Notifications.addNotificationReceivedListener(
-            (notification) => {
-                setNotification(notification);
-            }
-        );
-
-        const responseListener = Notifications.addNotificationResponseReceivedListener(
-            (response) => {
-                console.log(response);
-            }
-        );
-
-        return () => {
-            notificationListener.remove();
-            responseListener.remove();
-        };
+        enableNotification((notif) => {
+            myNotifHandler(notif);
+        });
     }, []);
 
     return (
-        // <View className="flex w-[100%] h-[100%] relative justify-center items-center">
         <ScrollView
             style={{
                 position: "relative",
-                // justifyContent: "center",
-                // alignItems: "center",
-                // display: "flex",
-                // flex: 0,
                 marginLeft: "auto",
                 marginRight: "auto",
                 width: "80%",
@@ -182,8 +166,23 @@ const ApiTest = () => {
                 <Button
                     title="Press to Send Notification"
                     onPress={async () => {
-                        console.log("Pressed!");
-                        await sendPushNotification(expoPushToken);
+                        const message = {
+                            to: expoPushToken,
+                            sound: "default",
+                            title: "Original Title",
+                            body: "And here is the body!",
+                            data: { someData: "goes here" },
+                        };
+
+                        await fetch("https://exp.host/--/api/v2/push/send", {
+                            method: "POST",
+                            headers: {
+                                Accept: "application/json",
+                                "Accept-encoding": "gzip, deflate",
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify(message),
+                        });
                     }}
                 />
                 <View style={{ alignItems: "center", justifyContent: "center" }}>
@@ -215,12 +214,45 @@ const ApiTest = () => {
                     }}
                 />
                 <Button
-                    title="Reset Notification"
+                    title="Get Notifications Count"
                     onPress={async () => {
-                        await resetNotificationDB();
+                        console.log(await getNotificationsCount());
+                    }}
+                />
+                <Button
+                    title="Enable Notification"
+                    onPress={async () => {
+                        await enableNotification((notif) => {
+                            myNotifHandler(notif);
+                        });
+                    }}
+                />
+                <Button
+                    title="Disable Notification"
+                    onPress={async () => {
+                        await disableNotifications();
+                    }}
+                />
+                <Button
+                    title="Clear Notification"
+                    onPress={async () => {
+                        await clearNotification();
+                    }}
+                />
+                <Button
+                    title="Get pushTokenString"
+                    onPress={async () => {
+                        console.log(expoPushToken);
                     }}
                 />
                 <Text>Latest Pointer: {latestNPointer}</Text>
+                {myNotifs.map((val, idx) => {
+                    return (
+                        <Text key={idx} className="text-[10px]">
+                            {JSON.stringify(val)}
+                        </Text>
+                    );
+                })}
             </View>
             <View className="relative h-[500px]"></View>
         </ScrollView>

@@ -4,48 +4,15 @@ import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
 import { type iUsageNotification, type iUsageNotificationSQL } from "@/schemas/usageNotification";
 import { db } from "./sqlite";
-import { USAGE_NOTIFICATION_PAGING_LIMIT } from "./constants";
-import { SystemError, SystemErrorEnum } from "./errorHandler";
+import { MAX_NOTIFICATIONS_COUNT, USAGE_NOTIFICATION_PAGING_LIMIT } from "./constants";
+import { errorHandler, HttpError, SystemError, SystemErrorEnum } from "./errorHandler";
 
-Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-        shouldPlaySound: true,
-        shouldSetBadge: true,
-        shouldShowBanner: true,
-        shouldShowList: true,
-    }),
-});
+export let expoPushToken: null | string = null;
 
-export async function sendPushNotification(expoPushToken: string) {
-    const message = {
-        to: expoPushToken,
-        sound: "default",
-        title: "Original Title",
-        body: "And here is the body!",
-        data: { someData: "goes here" },
-    };
-
-    try {
-        await fetch("https://exp.host/--/api/v2/push/send", {
-            method: "POST",
-            headers: {
-                Accept: "application/json",
-                "Accept-encoding": "gzip, deflate",
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(message),
-        });
-    } catch (err) {
-        console.log(err);
-    }
-}
-
-function handleRegistrationError(errorMessage: string) {
-    alert(errorMessage);
-    throw new Error(errorMessage);
-}
-
-export async function registerForPushNotificationsAsync() {
+export async function enableNotification(
+    notificationHandler?: (notification: Notifications.Notification) => void,
+    FullEraseErrorHandler = errorHandler
+): Promise<string | null> {
     if (Platform.OS === "android") {
         await Notifications.setNotificationChannelAsync("default", {
             name: "default",
@@ -63,30 +30,62 @@ export async function registerForPushNotificationsAsync() {
             finalStatus = status;
         }
         if (finalStatus !== "granted") {
-            handleRegistrationError(
-                "Permission not granted to get push token for push notification!"
-            );
-            return;
+            return null;
         }
         const projectId =
             Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
         if (!projectId) {
-            handleRegistrationError("Project ID not found");
+            throw new SystemError(SystemErrorEnum.NotificationProjectIdNotFound);
         }
         try {
-            const pushTokenString = (
+            const _pushTokenString = (
                 await Notifications.getExpoPushTokenAsync({
                     projectId,
                 })
             ).data;
-            console.log(pushTokenString);
-            return pushTokenString;
-        } catch (e: unknown) {
-            handleRegistrationError(`${e}`);
+            expoPushToken = _pushTokenString;
+
+            // Set Handler
+            Notifications.setNotificationHandler({
+                handleNotification: async (notification) => {
+                    // Delete if Full
+                    getNotificationsCount()
+                        .then((cnt) => {
+                            if (cnt > MAX_NOTIFICATIONS_COUNT) {
+                                deleteNOldest(1).catch((err) => {
+                                    FullEraseErrorHandler(err);
+                                });
+                            }
+                        })
+                        .catch((err) => {
+                            FullEraseErrorHandler(err);
+                        });
+
+                    if (notificationHandler) {
+                        notificationHandler(notification);
+                    }
+
+                    return {
+                        shouldPlaySound: true,
+                        shouldSetBadge: false,
+                        shouldShowBanner: true,
+                        shouldShowList: true,
+                    };
+                },
+            });
+
+            return expoPushToken;
+        } catch {
+            throw new HttpError(500);
         }
     } else {
-        handleRegistrationError("Must use physical device for push notifications");
+        throw new SystemError(SystemErrorEnum.NotRealDevice);
     }
+}
+
+export async function disableNotifications() {
+    expoPushToken = null;
+    Notifications.setNotificationHandler(null);
 }
 
 export async function getNotifications(
@@ -112,10 +111,8 @@ export async function getNotifications(
         if (qRes.length !== 0) {
             latest = qRes[qRes.length - 1]!.notification_id;
         }
-        console.log(qRes);
         return [qRes, latest];
-    } catch (err) {
-        console.log(err);
+    } catch {
         throw new SystemError(SystemErrorEnum.DatabaseExecError);
     }
 }
@@ -125,23 +122,33 @@ export async function saveNotification(notification: iUsageNotification) {
         throw new SystemError(SystemErrorEnum.DatabaseInitError);
     }
     try {
-        const qRes = await db.runAsync(
+        await db.runAsync(
             `INSERT INTO notifications (timestamp, type) VALUES ($timestamp, $type)`,
             { $timestamp: notification.timestamp, $type: notification.type }
         );
-        console.log(qRes.changes, qRes.lastInsertRowId);
     } catch {
         throw new SystemError(SystemErrorEnum.DatabaseExecError);
     }
 }
 
-export async function resetNotificationDB() {
+export async function clearNotification() {
     if (db === undefined) {
         throw new SystemError(SystemErrorEnum.DatabaseInitError);
     }
     try {
-        const qRes = await db.runAsync(`DELETE FROM notifications`);
-        console.log(qRes);
+        await db.runAsync(`DELETE FROM notifications`);
+    } catch {
+        throw new SystemError(SystemErrorEnum.DatabaseExecError);
+    }
+}
+
+export async function getNotificationsCount(): Promise<number> {
+    if (db === undefined) {
+        throw new SystemError(SystemErrorEnum.DatabaseInitError);
+    }
+    try {
+        const qRes = (await db.getFirstAsync(`SELECT COUNT(1) FROM notifications`)) as any;
+        return qRes["COUNT(1)"];
     } catch {
         throw new SystemError(SystemErrorEnum.DatabaseExecError);
     }
@@ -152,11 +159,10 @@ export async function deleteNOldest(n: number) {
         throw new SystemError(SystemErrorEnum.DatabaseInitError);
     }
     try {
-        const qRes = await db.runAsync(
+        await db.runAsync(
             `DELETE FROM notifications WHERE notification_id IN (SELECT notification_id FROM notifications ORDER BY notification_id ASC LIMIT $n)`,
             { $n: n }
         );
-        console.log(qRes);
     } catch {
         throw new SystemError(SystemErrorEnum.DatabaseExecError);
     }
