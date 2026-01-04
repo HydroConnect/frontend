@@ -1,7 +1,6 @@
-import { View, Pressable } from "react-native";
+import { View } from "react-native";
 import React from "react";
 import { Typography } from "@/src/components/Typography";
-import { Ionicons } from "@expo/vector-icons";
 import { CardShimmer } from "@/src/components/Shimmer";
 import { InfoTooltip } from "@/src/components/Tooltip";
 import { TooltipContent } from "@/src/components/TooltipContent";
