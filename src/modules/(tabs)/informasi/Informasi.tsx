@@ -17,6 +17,7 @@ import {
 } from "@/lib/notifications";
 import type { iUsageNotification } from "@/schemas/usageNotification";
 import { errorHandler } from "@/lib/errorHandler";
+import AnimatedSwitch from "@/src/components/AnimatedSwitch";
 
 const SCROLL_PADDING_BOTTOM = 100;
 let shouldScroll = false;
@@ -98,6 +99,41 @@ const Informasi = () => {
                 />
                 <View className="flex-1 pt-[5%] px-[8%]">
                     <PageTitle title="Informasi" className={"mb-[45px]"} />
+
+                    {/* Notifikasi Toggle Section */}
+                    <View className="bg-green-50 rounded-2xl p-4 mb-6">
+                        <View className="flex-row items-center justify-between">
+                            <View className="flex-1 mr-4">
+                                <Typography variant="title" weight="semibold" className="mb-1">
+                                    Izinkan Notifikasi
+                                </Typography>
+                                <Typography variant="label" className="text-gray-600">
+                                    Terima pemberitahuan status pompa
+                                </Typography>
+                            </View>
+                            <AnimatedSwitch
+                                value={isNEnabled}
+                                onValueChange={async (value) => {
+                                    if (value) {
+                                        const err = await enableNotification();
+                                        if (err instanceof Error) {
+                                            errorHandler(err);
+                                        }
+                                    } else {
+                                        const err = await disableNotifications();
+                                        if (err instanceof Error) {
+                                            errorHandler(err);
+                                        }
+                                    }
+                                    setIsNEnabled(await getIsNotificationEnabled());
+                                }}
+                            />
+                        </View>
+                    </View>
+
+                    {/*Garis Hitam */}
+                    <View className="h-[1.5px] bg-[#A6A6A6] mb-[24px]" />
+
                     {/* Info Section */}
                     <View className="mb-[5%]">
                         {/* Pemantauan Sistem Button */}
@@ -151,41 +187,6 @@ const Informasi = () => {
 
                     {/* Pemberitahuan Section */}
                     <View className="mb-20">
-                        <View className="flex flex-row justify-center gap-3 mb-10">
-                            {!isNEnabled ? (
-                                <Button
-                                    label="Nyalakan Notif"
-                                    variant="primary"
-                                    textVariant="body"
-                                    textWeight="semibold"
-                                    className="w-[45%]"
-                                    icon={(props) => <></>}
-                                    onPress={async () => {
-                                        const err = await enableNotification();
-                                        if (err instanceof Error) {
-                                            errorHandler(err);
-                                        }
-                                        setIsNEnabled(await getIsNotificationEnabled());
-                                    }}
-                                />
-                            ) : (
-                                <Button
-                                    label="Matikan Notif"
-                                    variant="secondary"
-                                    textVariant="body"
-                                    textWeight="semibold"
-                                    className="w-[45%]"
-                                    icon={(props) => <></>}
-                                    onPress={async () => {
-                                        const err = await disableNotifications();
-                                        if (err instanceof Error) {
-                                            errorHandler(err);
-                                        }
-                                        setIsNEnabled(await getIsNotificationEnabled());
-                                    }}
-                                />
-                            )}
-                        </View>
                         <Typography variant="h3" weight="semibold" className="mb-[12px]">
                             Pemberitahuan
                         </Typography>
