@@ -54,8 +54,8 @@ export async function getLatest(): Promise<iReadings | Error> {
                 pH: 1,
                 tds: 1,
                 temperature: 1,
-                control: 1,
-                percent: 1,
+                control: 0,
+                percent: 0,
                 timestamp: new Date().toISOString(),
             };
         }
