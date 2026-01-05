@@ -7,5 +7,6 @@ export const ON_OFF_THRESHOLD_ERROR_MS = 4000;
 export const FETCH_REST_TIME_MS = 10000;
 export const IOT_INTERVAL_MS = 2000;
 export const SUMMARY_GRAPH_PRECISION = 2;
-export const ENVIRONMENT_STATUS = "PRODUCTION";
+export const ENVIRONMENT_STATUS = "PRODUCTION"; // On Development change this to "DEVELOPMENT"
 export const PROGRESS_SCALING_FACTOR = 2000;
+export const PANDUAN_EXPIRED_D = 7;

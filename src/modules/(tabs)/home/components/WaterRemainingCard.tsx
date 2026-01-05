@@ -1,8 +1,7 @@
-import { View, Pressable } from "react-native";
+import { View } from "react-native";
 import React from "react";
 import { Typography } from "@/src/components/Typography";
 import { StatusPill } from "@/src/components/StatusPill";
-import { Ionicons } from "@expo/vector-icons";
 import { CardShimmer } from "@/src/components/Shimmer";
 import { InfoTooltip } from "@/src/components/Tooltip";
 import { TooltipContent } from "@/src/components/TooltipContent";
@@ -67,10 +66,6 @@ const WaterRemainingCard: React.FC<{ control: number | null; [key: string]: unkn
     }
 
     const { pillVariant, pillText, segment1Class, segment2Class } = statusConfig[status];
-
-    const handleInfoPress = () => {
-        console.log("Tombol info Sisa Air ditekan");
-    };
 
     return (
         <View className="rounded-3xl p-4 bg-green-50">

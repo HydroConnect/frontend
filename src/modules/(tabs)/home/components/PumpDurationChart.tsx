@@ -1,8 +1,7 @@
-import { View, Pressable } from "react-native";
+import { View } from "react-native";
 import React from "react";
 import { Typography } from "@/src/components/Typography";
 import { StatusPill } from "@/src/components/StatusPill"; // Impor StatusPill global-mu
-import { Ionicons } from "@expo/vector-icons";
 import type { iSummaries } from "@/schemas/summaries";
 import { formatDate, getHari, getHourMinute, round } from "@/lib/utils";
 import { SUMMARY_GRAPH_PRECISION } from "@/lib/constants";
@@ -18,10 +17,6 @@ const PumpDurationChart: React.FC<{ summaries: iSummaries[] | null; [key: string
     if (summaries === null) {
         return <CardShimmer />;
     }
-
-    const handleInfoPress = () => {
-        console.log("Tombol info Lama Pompa ditekan");
-    };
 
     // Nilai seconds tertinggi untuk nentuin skala
     let maxHour = 0;
@@ -65,7 +60,8 @@ const PumpDurationChart: React.FC<{ summaries: iSummaries[] | null; [key: string
                 {summaries.toReversed().map(({ uptime, timestamp }, index) => {
                     // 5. Hitung tinggi bar-nya
                     const hourUptime = round(uptime / 3600, SUMMARY_GRAPH_PRECISION);
-                    const barHeight = (hourUptime / maxHour) * CHART_MAX_HEIGHT_PX;
+                    const barHeight =
+                        Math.max(2, (hourUptime / maxHour) * CHART_MAX_HEIGHT_PX) || 2;
                     const [hourUp, minUp] = getHourMinute(hourUptime);
 
                     return (

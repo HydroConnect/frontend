@@ -8,6 +8,7 @@ import {
 } from "./io";
 import { readingsHeader, type iReadings } from "@/schemas/readings";
 import * as fs from "expo-file-system";
+import * as fsLegacy from "expo-file-system/legacy";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { iDownloadProgress } from "@/schemas/downloadProgress";
 import {
@@ -20,6 +21,7 @@ import {
 import { MAX_DOWNLOAD_ID_LENGTH, PROGRESS_SCALING_FACTOR } from "./constants";
 import { toastInfo, toastSuccess } from "@/src/components/ToastStack";
 import { linearMap, round } from "./utils";
+import { Platform } from "react-native";
 
 export async function checkUnfinishedProgress() {
     const progress = await AsyncStorage.getItem("download-progress");
@@ -64,6 +66,50 @@ function synthesizeFilename(downloadId: string, nonce: number = 0) {
     return `reports-${downloadId}-${nonce}.csv`;
 }
 
+async function getDirPermission(initialUri?: string): Promise<string> {
+    let outUri = "";
+    if (Platform.OS === "android") {
+        const permissions =
+            await fsLegacy.StorageAccessFramework.requestDirectoryPermissionsAsync(initialUri);
+        if (!permissions.granted) {
+            throw new DownloadError(DownloadErrorEnum.CancelPicking);
+        }
+        outUri = permissions.directoryUri;
+    } else {
+        outUri = (await fs.Directory.pickDirectoryAsync(initialUri)).uri;
+    }
+
+    return outUri;
+}
+
+async function createFile(dirUri: string, filename: string): Promise<fs.File> {
+    if (Platform.OS === "android") {
+        dirUri = fsLegacy.documentDirectory!;
+    }
+
+    const outFile = new fs.File(dirUri, filename);
+    outFile.create({ overwrite: true });
+    return outFile;
+}
+
+async function getFile(dirUri: string, filename: string): Promise<fs.File> {
+    if (Platform.OS === "android") {
+        dirUri = fsLegacy.documentDirectory!;
+    }
+    return new fs.File(dirUri, filename);
+}
+
+async function moveOutFile(outFile: fs.File, dirUri: string) {
+    if (Platform.OS === "android") {
+        const fileUri = await fsLegacy.StorageAccessFramework.createFileAsync(
+            dirUri,
+            outFile.name,
+            "text/csv"
+        );
+        await fsLegacy.writeAsStringAsync(fileUri, await outFile.text());
+    }
+}
+
 /**
  * @description Download Reports
  * @param downloadRequest DownloadRequest data
@@ -97,7 +143,7 @@ export async function downloadReports(
     let dirUri = "";
     if (progress === null) {
         try {
-            dirUri = (await fs.Directory.pickDirectoryAsync())!.uri;
+            dirUri = await getDirPermission();
         } catch {
             return new DownloadError(DownloadErrorEnum.CancelPicking);
         }
@@ -112,24 +158,23 @@ export async function downloadReports(
         };
     } else if (_forcePick) {
         try {
-            dirUri = (await fs.Directory.pickDirectoryAsync(progress.dirUri))!.uri;
+            dirUri = await getDirPermission(progress.dirUri);
         } catch {
             return new DownloadError(DownloadErrorEnum.CancelPicking);
         }
 
         if (dirUri !== progress.dirUri) {
-            return new DownloadError(DownloadErrorEnum.NoPermission, { path: progress.dirUri });
+            return new DownloadError(DownloadErrorEnum.DifferentFolder, { path: progress.dirUri });
         }
     } else {
         dirUri = progress.dirUri;
     }
-    let outFile, wStream;
+    let outFile: fs.File, wStream;
     try {
-        outFile = new fs.File(
+        outFile = await createFile(
             dirUri,
             synthesizeFilename(downloadRequest.downloadId, progress.nonce + 1)
         );
-        outFile.create({ overwrite: true });
         wStream = outFile.writableStream();
     } catch {
         return new DownloadError(DownloadErrorEnum.NoPermission, { path: progress.dirUri });
@@ -226,15 +271,17 @@ async function mergeDownloads(
     progress: iDownloadProgress,
     outDirUri: string
 ): Promise<undefined | Error> {
-    const outFile = new fs.File(outDirUri, synthesizeFilename(progress.downloadId, 0));
-    outFile.create({ overwrite: true });
+    const outFile = await createFile(outDirUri, synthesizeFilename(progress.downloadId, 0));
     const wStream = outFile.writableStream();
     const writer = wStream.getWriter();
 
     // Merge loop
     for (let i = 0; i <= progress.nonce; i++) {
         try {
-            const nowFile = new fs.File(outDirUri, synthesizeFilename(progress.downloadId, i + 1));
+            const nowFile = await getFile(
+                outDirUri,
+                synthesizeFilename(progress.downloadId, i + 1)
+            );
             const rStream = nowFile.readableStream();
             const reader = rStream.getReader();
             while (true) {
@@ -255,7 +302,7 @@ async function mergeDownloads(
     // Delete loop
     for (let i = 0; i <= progress.nonce; i++) {
         try {
-            new fs.File(outDirUri, synthesizeFilename(progress.downloadId, i + 1)).delete();
+            (await getFile(outDirUri, synthesizeFilename(progress.downloadId, i + 1))).delete();
         } catch {
             return new DownloadError(DownloadErrorEnum.NotFound, {
                 path: `${outDirUri}/${synthesizeFilename(progress.downloadId, i + 1)}`,
@@ -264,6 +311,7 @@ async function mergeDownloads(
     }
 
     await writer.close();
+    await moveOutFile(outFile, outDirUri);
 
     toastSuccess({ message: "Finish Merging!" });
 }

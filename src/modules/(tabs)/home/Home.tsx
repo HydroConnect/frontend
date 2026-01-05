@@ -20,6 +20,8 @@ import { globals } from "@/lib/globals";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import PageTitle from "@/src/components/PageTitle";
 import { toastInfo, toastWarning } from "@/src/components/ToastStack";
+import { enableNotification, getIsNotificationEnabled } from "@/lib/notifications";
+import { errorHandler } from "@/lib/errorHandler";
 
 let timeout: null | number = null;
 
@@ -38,6 +40,16 @@ const Home = () => {
     };
 
     useEffect(() => {
+        getIsNotificationEnabled().then((val) => {
+            if (val) {
+                enableNotification().then((err) => {
+                    if (err instanceof Error) {
+                        errorHandler(err);
+                    }
+                });
+            }
+        });
+
         function nowConnectAndListen() {
             connectAndListen(
                 () => {

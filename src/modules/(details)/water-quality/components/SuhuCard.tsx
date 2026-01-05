@@ -1,7 +1,6 @@
-import { View, Pressable } from "react-native";
+import { View } from "react-native";
 import React from "react";
 import { Typography } from "@/src/components/Typography";
-import { Ionicons } from "@expo/vector-icons";
 import { CardShimmer } from "@/src/components/Shimmer";
 import { InfoTooltip } from "@/src/components/Tooltip";
 import { TooltipContent } from "@/src/components/TooltipContent";
@@ -48,10 +47,6 @@ const SuhuCard: React.FC<SuhuCardProps> = ({ label, temp }) => {
     if (temp === null) {
         return <CardShimmer />;
     }
-
-    const handleInfoPress = () => {
-        console.log("Tombol info Kualitas Air ditekan");
-    };
 
     return (
         <View className="w-full rounded-3xl p-4 bg-green-50">

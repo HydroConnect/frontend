@@ -1,26 +1,89 @@
-import { View, ScrollView, useWindowDimensions, Linking } from "react-native";
-import React from "react";
+import { Linking, View, type NativeScrollEvent } from "react-native";
+import React, { useEffect, useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import { Typography } from "@/src/components/Typography";
 import Button from "@/src/components/Button";
 import NotificationCard from "./components/NotificationCard";
 import Entypo from "@expo/vector-icons/Entypo";
-import { Link, useRouter } from "expo-router";
-import LogoAirMati from "@/assets/images/informasi/LogoAirMati";
-import LogoAirNyala from "@/assets/images/informasi/LogoAirNyala";
-import { debounce } from "@/lib/utils";
+import { useRouter } from "expo-router";
+import { debounce, formatDate, isSameDay } from "@/lib/utils";
 import { RefreshableScreen } from "@/src/components/RefreshableScreen";
 import PageTitle from "@/src/components/PageTitle";
+import {
+    disableNotifications,
+    enableNotification,
+    getIsNotificationEnabled,
+    getNotifications,
+} from "@/lib/notifications";
+import type { iUsageNotification } from "@/schemas/usageNotification";
+import { errorHandler } from "@/lib/errorHandler";
+
+const SCROLL_PADDING_BOTTOM = 100;
+let shouldScroll = false;
 
 const Informasi = () => {
-    const { height } = useWindowDimensions();
-    const navbarPadding = height * 0.1;
     const router = useRouter();
+    const [latest, setLatest] = useState<number | null>(null);
+    const [usageNotifications, setUsageNotifications] = useState<iUsageNotification[]>([]);
+    const [isNEnabled, setIsNEnabled] = useState<boolean>(false);
 
     let timeout = {};
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const today = new Date();
+
+    useEffect(() => {
+        getIsNotificationEnabled().then((val) => {
+            setIsNEnabled(val);
+        });
+        getNotifications(null).then((data) => {
+            if (data instanceof Error) {
+                errorHandler(data);
+                return;
+            }
+
+            setUsageNotifications(data[0]);
+            setLatest(data[1]);
+            shouldScroll = true;
+        });
+    }, []);
 
     return (
-        <RefreshableScreen>
+        <RefreshableScreen
+            fun={() => {
+                getNotifications(null).then((data) => {
+                    if (data instanceof Error) {
+                        errorHandler(data);
+                        return;
+                    }
+                    setUsageNotifications(data[0]);
+                    setLatest(data[1]);
+                    shouldScroll = true;
+                });
+            }}
+            onScroll={({ nativeEvent }: { nativeEvent: NativeScrollEvent }) => {
+                if (
+                    shouldScroll &&
+                    nativeEvent.contentOffset.y + nativeEvent.layoutMeasurement.height >=
+                        nativeEvent.contentSize.height - SCROLL_PADDING_BOTTOM
+                ) {
+                    shouldScroll = false;
+                    getNotifications(latest).then((data) => {
+                        if (data instanceof Error) {
+                            errorHandler(data);
+                            return;
+                        }
+
+                        if (data[0].length === 0) {
+                            shouldScroll = false;
+                            return;
+                        }
+                        setUsageNotifications([...usageNotifications, ...data[0]]);
+                        setLatest(data[1]);
+                        shouldScroll = true;
+                    });
+                }
+            }}>
             <View className="flex-1 bg-white">
                 <LinearGradient
                     colors={["#E0EEE6", "#FFFFFF"]}
@@ -33,11 +96,7 @@ const Informasi = () => {
                         width: "100%",
                     }}
                 />
-                <ScrollView
-                    className="flex-1 pt-[5%] px-[8%]"
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={{ paddingBottom: navbarPadding }} // Responsif berdasarkan tinggi layar
-                >
+                <View className="flex-1 pt-[5%] px-[8%]">
                     <PageTitle title="Informasi" className={"mb-[45px]"} />
                     {/* Info Section */}
                     <View className="mb-[5%]">
@@ -92,51 +151,75 @@ const Informasi = () => {
 
                     {/* Pemberitahuan Section */}
                     <View className="mb-20">
+                        <View className="flex flex-row justify-center gap-3 mb-10">
+                            {!isNEnabled ? (
+                                <Button
+                                    label="Nyalakan Notif"
+                                    variant="primary"
+                                    textVariant="body"
+                                    textWeight="semibold"
+                                    className="w-[45%]"
+                                    icon={(props) => <></>}
+                                    onPress={async () => {
+                                        const err = await enableNotification();
+                                        if (err instanceof Error) {
+                                            errorHandler(err);
+                                        }
+                                        setIsNEnabled(await getIsNotificationEnabled());
+                                    }}
+                                />
+                            ) : (
+                                <Button
+                                    label="Matikan Notif"
+                                    variant="secondary"
+                                    textVariant="body"
+                                    textWeight="semibold"
+                                    className="w-[45%]"
+                                    icon={(props) => <></>}
+                                    onPress={async () => {
+                                        const err = await disableNotifications();
+                                        if (err instanceof Error) {
+                                            errorHandler(err);
+                                        }
+                                        setIsNEnabled(await getIsNotificationEnabled());
+                                    }}
+                                />
+                            )}
+                        </View>
                         <Typography variant="h3" weight="semibold" className="mb-[12px]">
                             Pemberitahuan
                         </Typography>
 
-                        {/* Hari ini */}
-                        <Typography
-                            variant="title"
-                            weight="semibold"
-                            className="mb-[12px] text-gray-700">
-                            Hari ini
-                        </Typography>
-
-                        <NotificationCard
-                            title="Pompa dimatikan"
-                            timestamp={new Date(2025, 10, 7, 8, 20)} // 7 November 2025, 08:20
-                            icon={<LogoAirMati width={50} height={50} />}
-                        />
-
-                        <NotificationCard
-                            title="Pompa dinyalakan"
-                            timestamp={new Date(2025, 10, 7, 10, 45)} // 7 November 2025, 10:45
-                            icon={<LogoAirNyala width={50} height={50} />}
-                        />
-
-                        {/* Kemarin */}
-                        <Typography
-                            variant="title"
-                            weight="semibold"
-                            className="mb-[12px] text-gray-700">
-                            Kemarin
-                        </Typography>
-
-                        <NotificationCard
-                            title="Pompa dimatikan"
-                            timestamp={new Date(2025, 10, 6, 15, 30)} // 6 November 2025, 15:30
-                            icon={<LogoAirMati width={50} height={50} />}
-                        />
-
-                        <NotificationCard
-                            title="Pompa dinyalakan"
-                            timestamp={new Date(2025, 10, 6, 7, 15)} // 6 November 2025, 07:15
-                            icon={<LogoAirNyala width={50} height={50} />}
-                        />
+                        {usageNotifications.map((notif, idx) => {
+                            const nowDate = new Date(notif.timestamp);
+                            if (
+                                idx === 0 ||
+                                !isSameDay(
+                                    nowDate,
+                                    new Date(usageNotifications[idx - 1]!.timestamp)
+                                )
+                            ) {
+                                return (
+                                    <React.Fragment key={`group-${idx}`}>
+                                        <Typography
+                                            variant="title"
+                                            weight="semibold"
+                                            className="mb-[12px] text-gray-700"
+                                            key={`S${idx}`}>
+                                            {isSameDay(today, nowDate)
+                                                ? "Hari Ini"
+                                                : isSameDay(nowDate, yesterday)
+                                                  ? "Kemarin"
+                                                  : formatDate(nowDate)}
+                                        </Typography>
+                                        <NotificationCard usageNotification={notif} key={idx} />
+                                    </React.Fragment>
+                                );
+                            }
+                            return <NotificationCard usageNotification={notif} key={idx} />;
+                        })}
                     </View>
-                </ScrollView>
+                </View>
             </View>
         </RefreshableScreen>
     );
