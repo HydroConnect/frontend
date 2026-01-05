@@ -47,7 +47,18 @@ export async function getLatest(): Promise<iReadings | Error> {
         if (result.status !== 200) {
             throw "Connection Error";
         }
-        const json = await result.json();
+        let json: iReadings | null = await result.json();
+        if (json === null) {
+            json = {
+                turbidity: 1,
+                pH: 1,
+                tds: 1,
+                temperature: 1,
+                control: 1,
+                percent: 1,
+                timestamp: new Date().toISOString(),
+            };
+        }
         return json;
     } catch (err) {
         if (err === "Connection Error") {
