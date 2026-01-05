@@ -1,3 +1,4 @@
+// Sync with BE
 export const enum UsageNotificationType {
     on = 1,
     off = 0,

@@ -1,3 +1,4 @@
+// Sync with BE
 interface iReadings {
     turbidity: number;
     pH: number;

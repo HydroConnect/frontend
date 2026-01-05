@@ -1,3 +1,4 @@
+// Sync with BE
 interface iSummaries {
     uptime: number;
     timestamp: string;

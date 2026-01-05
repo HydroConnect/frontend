@@ -123,6 +123,11 @@ export async function fetchData(
     }
 }
 
+/**
+ * Get the latest panduanData from server
+ * @param _forceFetch To force refetch (when refresh)
+ * @returns
+ */
 export async function getPanduanData(
     _forceFetch: boolean = false
 ): Promise<iPanduanData[] | Error> {
