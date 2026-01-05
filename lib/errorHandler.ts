@@ -16,8 +16,6 @@ export enum DownloadErrorEnum {
     Unknown,
 }
 export enum SystemErrorEnum {
-    DatabaseInitError,
-    DatabaseExecError,
     NotificationProjectIdNotFound,
     NotRealDevice,
 }
@@ -99,12 +97,6 @@ export class SystemError extends Error {
     constructor(type: SystemErrorEnum) {
         let message = "";
         switch (type) {
-            case SystemErrorEnum.DatabaseInitError:
-                message = "Error in initializing database";
-                break;
-            case SystemErrorEnum.DatabaseExecError:
-                message = "Error in executing database command";
-                break;
             case SystemErrorEnum.NotificationProjectIdNotFound:
                 message = "Project ID not founc (app error)";
                 break;
