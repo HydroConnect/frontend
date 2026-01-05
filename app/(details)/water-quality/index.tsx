@@ -2,13 +2,17 @@ import React from "react";
 import WaterQuality from "@/src/modules/(details)/water-quality/WaterQuality";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
+import { View } from "react-native";
 
 const index = () => {
     return (
-        <SafeAreaView className="flex-1 bg-black" edges={["bottom", "top"]}>
-            <StatusBar backgroundColor="white" style="dark" />
-            <WaterQuality />
-        </SafeAreaView>
+        <View className="flex-1">
+            <SafeAreaView className="bg-white" edges={["top"]} />
+            <SafeAreaView className="flex-1 bg-black" edges={["bottom"]}>
+                <StatusBar backgroundColor="white" style="dark" />
+                <WaterQuality />
+            </SafeAreaView>
+        </View>
     );
 };
 

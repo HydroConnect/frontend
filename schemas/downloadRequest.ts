@@ -1,3 +1,4 @@
+// Sync with BE
 interface iDownloadRequest {
     from: string;
     to: string;

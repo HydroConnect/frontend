@@ -2,67 +2,128 @@
 
 ## Overview
 
-This document provides an overview of the **Frontend API Reference**, including schemas, constants, and function documentation.
+This document provides a complete reference for the **Frontend API**, including schemas, constants, contexts, globals, socket handlers, REST utilities, and download logic.
 
 > **Note:** `ApiTest.tsx` is a **development-only** page for API debugging and must be excluded from production.
 
+All console logs throughout the codebase have been replaced with:
+
+- `toastInfo`
+- `toastError`
+- `toastSuccess`
+- `toastWarn`
+
+These functions must be used for all developer-facing and user-facing notifications.
+
+API reference can be seen in individual file on `lib/` some has `JSDoc` documentation and have typescript interface.
+
 ---
 
-## Directory Structure
+## API Directory Structure
 
 ```
-
-lib/ # Logic, constants, and functions
-schemas/ # All schemas used by the frontend
-
+lib/                     # Logic, constants, functions
+lib/contexts/            # React Context Providers (connection, readings, summaries)
+schemas/                 # All schemas used by the frontend
 ```
 
 ---
 
-## Schemas
+# Schemas
 
-### DownloadProgress
+Below is the **schemas documentation derived strictly from the provided TypeScript interfaces**.
+Since **all items are frontend-only TypeScript interfaces**, **only interfaces are documented** (no Zod, no Mongoose).
+
+For items marked **“Sync with BE”**, a **clear, prominent indicator** is added as requested.
+
+---
+
+**SYNC WITH BACKEND (BE)**
+
+---
+
+### `DownloadProgress`
+
+**Description:**
+Tracks local download progress and reconnection state on the client.
+
+**Type:**
 
 ```ts
 interface iDownloadProgress {
     downloadId: string;
-    nonce: number; // Number of reconnection attempts
+    nonce: number;
     lastWritten: string;
+    from: string;
     to: string;
     dirUri: string;
 }
-
-const downloadProgressSample: iDownloadProgress = {
-    downloadId: "MDOW",
-    nonce: 0,
-    lastWritten: "2025-10-22T01:32:11.046Z",
-    to: "2025-10-22T01:32:11.048Z",
-    dirUri: "file:///testing",
-};
 ```
+
+**Fields:**
+
+| Field         | Type           | Description                               |
+| ------------- | -------------- | ----------------------------------------- |
+| `downloadId`  | `string`       | Unique download identifier.               |
+| `nonce`       | `number`       | Number of reconnection attempts.          |
+| `lastWritten` | `ISO datetime` | Last successfully written timestamp.      |
+| `from`        | `ISO datetime` | Start date of the download range.         |
+| `to`          | `ISO datetime` | End date of the download range.           |
+| `dirUri`      | `string`       | Local directory URI where data is stored. |
 
 ---
 
-### DownloadRequest (Sync with BE)
+### `DownloadRequest`
+
+**_SYNC WITH BACKEND (BE)_**
+
+Request payload for initiating a data download.
 
 ```ts
 interface iDownloadRequest {
     from: string;
     to: string;
     downloadId: string;
-    // Length must be less than MAX_DOWNLOAD_ID_LENGTH
 }
-
-const downloadRequestSample = {
-    from: "2025-10-22T01:32:11.043Z",
-    to: "2025-10-22T01:32:11.048Z",
-    downloadId: "MDOW",
-};
 ```
+
+| Field        | Type           | Description                        |
+| ------------ | -------------- | ---------------------------------- |
+| `from`       | `ISO datetime` | Start of requested data range.     |
+| `to`         | `ISO datetime` | End of requested data range.       |
+| `downloadId` | `string`       | Unique identifier for the request. |
 
 ---
 
-### Readings (Sync with BE)
+### `PanduanData`
+
+**_SYNC WITH BACKEND (BE)_**
+
+Instructional guide data displayed in the application.
+
+```ts
+interface iPanduanData {
+    title: string;
+    videoUrl: string;
+    thumbnailUrl: string;
+    steps: string[];
+}
+```
+
+| Field          | Type       | Description                 |
+| -------------- | ---------- | --------------------------- |
+| `title`        | `string`   | Guide title.                |
+| `videoUrl`     | `string`   | URL to instructional video. |
+| `thumbnailUrl` | `string`   | Thumbnail image URL.        |
+| `steps`        | `string[]` | Ordered list of steps.      |
+
+---
+
+### `Readings`
+
+**_SYNC WITH BACKEND (BE)_**
+
+Represents a single IoT sensor reading.
 
 ```ts
 interface iReadings {
@@ -74,217 +135,175 @@ interface iReadings {
     percent: number;
     timestamp: string;
 }
-
-const readingsSample: iReadings = {
-    turbidity: 10,
-    pH: 7,
-    tds: 6,
-    temperature: 10,
-    control: 31,
-    percent: 0.5,
-    timestamp: "2025-10-21T01:23:54.533+00:00",
-};
 ```
+
+| Field         | Type           | Description                          |
+| ------------- | -------------- | ------------------------------------ |
+| `turbidity`   | `number`       | Turbidity level of water.            |
+| `pH`          | `number`       | pH level of water.                   |
+| `tds`         | `number`       | Total dissolved solids.              |
+| `temperature` | `number`       | Temperature in Celsius.              |
+| `control`     | `number`       | Control bitmask (MSB → LSB).         |
+| `percent`     | `number`       | Calculated water quality percentage. |
+| `timestamp`   | `ISO datetime` | Time when reading was recorded.      |
 
 ---
 
-### Summaries (Sync with BE)
+### `Summaries`
+
+**SYNC WITH BACKEND (BE)**
+
+Daily uptime summary for the system.
 
 ```ts
 interface iSummaries {
-    min: iReadings;
-    max: iReadings;
+    uptime: number;
     timestamp: string;
 }
+```
 
-const summariesSample: iSummaries = {
-    min: readingsSample,
-    max: readingsSample,
-    timestamp: "2025-10-21T01:23:54.533+00:00",
+| Field       | Type           | Description                        |
+| ----------- | -------------- | ---------------------------------- |
+| `uptime`    | `number`       | Uptime in seconds.                 |
+| `timestamp` | `ISO datetime` | Summary date (midnight reference). |
+
+---
+
+### `UsageNotification`
+
+**SYNC WITH BACKEND (BE)**
+
+Represents a usage-based notification event.
+
+```ts
+const enum UsageNotificationType {
+    on = 1,
+    off = 0,
+}
+
+interface iUsageNotification {
+    notificationId: number;
+    type: UsageNotificationType;
+    timestamp: number;
+}
+```
+
+| Field            | Type                    | Description                        |
+| ---------------- | ----------------------- | ---------------------------------- |
+| `notificationId` | `number`                | Unique notification identifier.    |
+| `type`           | `UsageNotificationType` | Notification state (`on` / `off`). |
+| `timestamp`      | `number`                | Unix timestamp (milliseconds).     |
+
+---
+
+# Contexts (`lib/contexts/`)
+
+## connectionCTX
+
+```ts
+interface iConnectionCTX {
+    connection: boolean;
+    setConnection: (...args: any) => any;
+}
+```
+
+Used for global UI connection status, updated by socket events.
+
+---
+
+## downloadProgressCTX
+
+```ts
+interface iDownloadProgressCTX {
+    downloadProgress: number | null;
+    setDownloadProgress: (...args: any) => any;
+}
+```
+
+Used for UI download progress states.
+
+---
+
+## readingCTX
+
+```ts
+interface iReadingCTX {
+    reading: null | iReadings;
+    setReading: (...args: any) => any;
+}
+```
+
+Stores the **latest IoT reading**.
+
+---
+
+## summariesCTX
+
+```ts
+interface iSummariesCTX {
+    summaries: null | iSummaries[];
+    setSummaries: (...args: any) => any;
+}
+```
+
+Stores the **latest summaries** returned from backend.
+
+---
+
+# Globals (`lib/globals.tsx`)
+
+These globals are used for syncing UI state, caching, and checking when to re-fetch.
+
+```ts
+interface iGlobals {
+    GLatestReadings: null | iReadings;
+    GSummaries: null | iSummaries[];
+    GLastFetch: null | Date;
+}
+
+export const globals: iGlobals = {
+    GLatestReadings: null,
+    GSummaries: null,
+    GLastFetch: null,
 };
 ```
 
+- `GLatestReadings` is updated by socket stream
+- `GSummaries` is updated by summaries REST calls
+- `GLastFetch` is used by offline-prefetch logic
+
 ---
 
-## Constants
-
-**Constants.ts**
+# Constants
 
 ```ts
-export const BACKEND_API_BASE_URL = "http://192.168.1.6:3000"; // Change to server IP on development
-export const BACKEND_API_REST_VERSION = "v1";
-export const BACKEND_API_IO_VERSION = "v1";
-export const MAX_DOWNLOAD_ID_LENGTH = 10;
-// SYNC WITH BE!
+const ENVIRONMENT_STATUS = "PRODUCTION"; // On Development change this to "DEVELOPMENT"
+
+const BACKEND_API_BASE_URL = "https://hydroconnect.org"; // On Development change this to server IP
+const BACKEND_API_REST_VERSION = "v1";
+const BACKEND_API_IO_VERSION = "v1";
+
+const MAX_DOWNLOAD_ID_LENGTH = 50;
+
+const ON_OFF_THRESHOLD_MS = 6000; // For when is considered realtime data
+const ON_OFF_THRESHOLD_ERROR_MS = 4000;
+
+const FETCH_REST_TIME_MS = 10000; // Rest time for fetching latest reading (prevent spam)
+
+const IOT_INTERVAL_MS = 2000;
+
+const SUMMARY_GRAPH_PRECISION = 2;
+const PROGRESS_SCALING_FACTOR = 2000; // Download Progress percent scaler
+const PANDUAN_EXPIRED_D = 7; // When to refetch
 ```
 
 ---
 
-## API Reference
+# Error Handling
 
-### resumeDownload
+There are **three** custom error types.
 
-```ts
-/**
- * @description Resume unfinished downloads, throw if none exist
- * @param {boolean} _forcePick Force open file picker (used when permission error)
- * @param mergeFailHandler Passed to downloadReports (defaults to errorHandler)
- * @returns {Promise<Error | undefined>}
- */
-export async function resumeDownload(
-    _forcePick: boolean = false,
-    mergeFailHandler: (err: Error) => void = errorHandler
-): Promise<undefined | Error>;
-```
-
-**File:** `downloadReports.ts`
-
----
-
-### downloadReports
-
-```ts
-/**
- * @description Download Reports
- * @param downloadRequest DownloadRequest data
- * @param {boolean} _resume Resume unfinished download (internal use only)
- * @param {boolean} _forcePick Force file picker (internal use only)
- * @param mergeFailHandler Handler for merge failure
- * @returns {Promise<undefined | Error>}
- */
-export async function downloadReports(
-    downloadRequest: iDownloadRequest,
-    _resume: boolean = false,
-    _forcePick: boolean = false,
-    mergeFailHandler: (err: Error) => void = errorHandler
-): Promise<undefined | Error>;
-```
-
-**File:** `downloadReports.ts`
-
----
-
-### disconnect
-
-```ts
-/**
- * @description Disconnect socket.io from server
- * @returns {undefined | Error} Error if not connected
- */
-export function disconnect(): undefined | Error;
-```
-
-**File:** `io.ts`
-
----
-
-### \_startDownload
-
-```ts
-/**
- * @description Start backend download process (internal use only)
- * @param downloadRequest
- * @param downloadHandler
- * @param finishHandler
- * @returns {undefined | Error} Undefined if success, Error otherwise
- */
-export function _startDownload(
-    downloadRequest: iDownloadRequest,
-    downloadHandler: (readings: iReadings[], downloadId: string) => void | Promise<void>,
-    finishHandler: (downloadId: string) => void | Promise<void>
-): undefined | Error;
-```
-
-**File:** `io.ts`
-
----
-
-### connectAndListen
-
-```ts
-/**
- * @description Connect to socket.io and listen readings
- * @param connectHandler Is suggested to change UI Connection status
- * @param disconnectHandler Is suggested to handle changes in UI and to call connectAndListen() again
- * @param readingsHandler Is suggested to update the UI of the IoT data element
- * @param IOErrorHandler Is suggested to use default ErrorHandler (when receives error event)
- */
-export function connectAndListen(
-    connectHandler: () => void,
-    disconnectHandler: () => void,
-    readingsHandler: (readings: iReadings) => void,
-    IOErrorHandler: (err: Error) => void = errorHandler
-);
-```
-
-**File:** `io.ts`
-
----
-
-### isConnected
-
-```ts
-/**
- * @description Get socket connection status
- * @returns {boolean}
- */
-export function isConnected(): boolean;
-```
-
-**File:** `io.ts`
-
----
-
-### setIsDownloading
-
-```ts
-/**
- * @description Change downloading status (internal use only)
- * @param {boolean} input
- */
-export function setIsDownloading(input: boolean);
-```
-
-**File:** `io.ts`
-
----
-
-### getIsDownloading
-
-```ts
-/**
- * @description Get current downloading status
- * @returns {boolean}
- */
-export function getIsDownloading();
-```
-
-**File:** `io.ts`
-
----
-
-### getSummaries
-
-```ts
-/**
- * @description Get last 7 days summaries
- * @returns {Promise<iSummaries[] | Error>}
- */
-export async function getSummaries(): Promise<iSummaries[] | Error>;
-```
-
-**File:** `rest.ts`
-
-> **Note:** Any undocumented functions are internal only.
-> **Warning:** Several functions and parameters are not meant to be sent by the frontend.
-
----
-
-## Error Handling
-
-There are **three** custom error types:
-
-### IOError
+## IOError
 
 ```ts
 IOError(type: IOErrorEnum)
@@ -294,21 +313,17 @@ enum IOErrorEnum {
 }
 ```
 
-Used for **IO-related** errors.
-
 ---
 
-### HTTPError
+## HTTPError
 
 ```ts
 HTTPError(statusCode: number)
 ```
 
-Used for **HTTP/REST** related errors.
-
 ---
 
-### DownloadError
+## DownloadError
 
 ```ts
 DownloadError(type: DownloadErrorEnum)
@@ -325,26 +340,32 @@ enum DownloadErrorEnum {
 }
 ```
 
-Used for **Download-related** errors.
-
 ---
 
-### Default Error Handler
+## SystemError
 
 ```ts
-/**
- * @description Default handler for catching errors
- * @suggestion Show modal or alert to the UI
- */
-function errorHandler(error: Error);
+enum SystemErrorEnum {
+    NotificationProjectIdNotFound,
+    NotRealDevice,
+}
 ```
 
 ---
 
-### Test Case
+## Default Error Handler
 
-This test case must be checked when implementing new feature
-Downloads Error test case:
+```ts
+function errorHandler(error: Error);
+```
+
+This will spawn a toast.
+
+---
+
+# Test Case Coverage (manual test)
+
+## Download Error Test Cases
 
 ```
 - Invalid name (name > MAX_DOWNLOAD_ID_LENGTH)
@@ -358,8 +379,19 @@ Downloads Error test case:
 - User try to resume but there are no unfinished downloads
 ```
 
-Http Test Case:
+---
+
+## HTTP Test Case
 
 ```
 - Server Down
+```
+
+---
+
+## Notification Test Case
+
+```
+- Enable notification and receive
+- Disable notification and receive (should not come)
 ```

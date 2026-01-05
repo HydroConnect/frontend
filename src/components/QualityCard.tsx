@@ -1,17 +1,22 @@
-import { View, Pressable, Platform } from "react-native";
-import React, { use } from "react";
+import { View, Pressable } from "react-native";
+import React from "react";
 import { Typography } from "@/src/components/Typography";
-import StatusPill from "@/src/components/StatusPill";
+import { StatusPill } from "@/src/components/StatusPill";
 import { Ionicons } from "@expo/vector-icons";
 import Button from "@/src/components/Button";
 import { useRouter } from "expo-router";
-
-type Level = 1 | 2 | 3 | 4 | 5;
+import { CardShimmer } from "./Shimmer";
+import type { Level } from "@/lib/chemFormula";
+import { InfoTooltip } from "@/src/components/Tooltip";
+import { TooltipContent } from "@/src/components/TooltipContent";
 
 interface QualityCardProps {
     label: string;
-    level: Level;
+    level: null | Level;
     isButton?: boolean;
+    customPillText?: string; // Custom text untuk pill, override default "Aman"/"Bahaya"
+    description?: string; // Deskripsi tambahan untuk tooltip
+    items?: { label: string; value: string }[]; // Item tambahan untuk tooltip
 }
 
 const BAR_OK = "bg-blue-400";
@@ -22,7 +27,7 @@ const statusConfig: Record<
     Level,
     {
         pillVariant: "ok" | "warn";
-        pillText: string;
+        pillText: string | any;
         barSegments: string[];
     }
 > = {
@@ -58,13 +63,26 @@ const statusConfig: Record<
     },
 };
 
-const QualityCard: React.FC<QualityCardProps> = ({ level, label, isButton }) => {
+const QualityCard: React.FC<QualityCardProps> = ({
+    level,
+    label,
+    isButton,
+    customPillText,
+    description,
+    items,
+}) => {
     const router = useRouter();
+    if (level === null) {
+        return <CardShimmer />;
+    }
     const { pillVariant, pillText, barSegments } = statusConfig[level];
 
-    const handleInfoPress = () => {
-        console.log("Tombol info Kualitas Air ditekan");
-    };
+    // Gunakan customPillText jika ada, kalau tidak pakai default dari statusConfig
+    const displayPillText = customPillText || pillText;
+    // Jika ada customPillText, gunakan variant "default", kalau tidak pakai dari statusConfig
+    const displayPillVariant = customPillText ? "default" : pillVariant;
+
+
 
     const handleButtonPress = () => {
         router.push("/(details)/water-quality");
@@ -77,10 +95,17 @@ const QualityCard: React.FC<QualityCardProps> = ({ level, label, isButton }) => 
                     {label}
                 </Typography>
                 <View className="flex flex-row gap-1 justify-center items-center">
-                    <Pressable onPress={handleInfoPress}>
-                        <Ionicons name="help-circle" size={30} color={"#7D9F8C"} />
-                    </Pressable>
-                    <StatusPill variant={pillVariant} text={pillText} />
+                    <InfoTooltip
+                        iconSize={30}
+                        content={
+                            <TooltipContent
+                                {...(description && { description })}
+                                {...(items && { items })}
+                            />
+                        }
+                    />
+
+                    <StatusPill variant={displayPillVariant} text={displayPillText} />
                 </View>
             </View>
             <View className="mt-4">

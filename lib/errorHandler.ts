@@ -1,3 +1,4 @@
+import { toastError } from "@/src/components/ToastStack";
 import { MAX_DOWNLOAD_ID_LENGTH } from "./constants";
 
 export enum IOErrorEnum {
@@ -8,10 +9,15 @@ export enum DownloadErrorEnum {
     CancelPicking,
     NotFound,
     NoPermission,
+    DifferentFolder,
     DownloadInProgress,
     UnfinishedDownload,
     NoUnfinishedDownload,
     Unknown,
+}
+export enum SystemErrorEnum {
+    NotificationProjectIdNotFound,
+    NotRealDevice,
 }
 export class HttpError extends Error {
     status: number;
@@ -49,6 +55,7 @@ export class IOError extends Error {
 }
 export class DownloadError extends Error {
     metadata = {};
+    type: DownloadErrorEnum;
     constructor(type: DownloadErrorEnum, metadata?: any) {
         let message = "";
         switch (type) {
@@ -67,6 +74,9 @@ export class DownloadError extends Error {
             case DownloadErrorEnum.NoPermission:
                 message = "Require permission";
                 break;
+            case DownloadErrorEnum.DifferentFolder:
+                message = "Choosen folder differs than before: " + metadata.path;
+                break;
             case DownloadErrorEnum.UnfinishedDownload:
                 message = "There is unfinished download";
                 break;
@@ -78,11 +88,28 @@ export class DownloadError extends Error {
         }
         super(message);
         Error.captureStackTrace(this, this.constructor);
+        this.type = type;
         this.metadata = metadata;
+        this.name = this.constructor.name;
+    }
+}
+export class SystemError extends Error {
+    constructor(type: SystemErrorEnum) {
+        let message = "";
+        switch (type) {
+            case SystemErrorEnum.NotificationProjectIdNotFound:
+                message = "Project ID not founc (app error)";
+                break;
+            case SystemErrorEnum.NotRealDevice:
+                message = "Some feature can only be run on real device not simulator";
+                break;
+        }
+        super(message);
+        Error.captureStackTrace(this, this.constructor);
         this.name = this.constructor.name;
     }
 }
 
 export function errorHandler(err: Error) {
-    console.log(err);
+    toastError({ message: err.message });
 }

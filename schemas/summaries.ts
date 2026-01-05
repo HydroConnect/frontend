@@ -1,14 +1,11 @@
-import { readingsSample, type iReadings } from "./readings";
-
+// Sync with BE
 interface iSummaries {
-    min: iReadings;
-    max: iReadings;
+    uptime: number;
     timestamp: string;
 }
 
 const summariesSample: iSummaries = {
-    min: readingsSample,
-    max: readingsSample,
+    uptime: 3600,
     timestamp: "2025-10-21T01:23:54.533+00:00",
 };
 

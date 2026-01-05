@@ -1,10 +1,19 @@
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack } from "expo-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { View, Dimensions, Platform } from "react-native";
 import * as NavigationBar from "expo-navigation-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "./globals.css";
+import { ReadingCTX } from "@/lib/contexts/readingCTX";
+import { SummariesCTX } from "@/lib/contexts/summariesCTX";
+import type { iReadings } from "@/schemas/readings";
+import type { iSummaries } from "@/schemas/summaries";
+import { ConnectionCTX } from "@/lib/contexts/connectionCTX";
+import { ToastStack } from "@/src/components/ToastStack";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import { DownloadProgressCTX } from "@/lib/contexts/downloadProgressCTX";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -14,6 +23,11 @@ const scale = Math.min(width / guidelineBaseWidth, 1.1);
 const baseRem = 16 * scale;
 
 export default function RootLayout() {
+    const [connection, setConnection] = useState<boolean>(false);
+    const [reading, setReading] = useState<null | iReadings>(null);
+    const [summaries, setSummaries] = useState<null | iSummaries[]>(null);
+    const [downloadProgress, setDownloadProgress] = useState<null | number>(null);
+
     const [fontsLoaded, fontError] = useFonts({
         "SourceSansPro-Regular": require("../assets/fonts/source-sans-pro.regular.ttf"),
         "SourceSansPro-Semibold": require("../assets/fonts/source-sans-pro.semibold.ttf"),
@@ -22,6 +36,8 @@ export default function RootLayout() {
     useEffect(() => {
         if (Platform.OS === "android") {
             NavigationBar.setButtonStyleAsync("light");
+            NavigationBar.setPositionAsync("absolute");
+            NavigationBar.setVisibilityAsync("visible");
         }
         if (fontsLoaded || fontError) {
             SplashScreen.hideAsync();
@@ -34,15 +50,51 @@ export default function RootLayout() {
 
     return (
         <SafeAreaProvider>
-            <View style={{ "--rem": baseRem } as any} className="flex-1">
-                <Stack>
-                    <Stack.Screen name="index" options={{ headerShown: false }} />
-                    <Stack.Screen name="ApiTest" options={{ headerShown: false }} />
-                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                    <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-                    <Stack.Screen name="(details)" options={{ headerShown: false }} />
-                </Stack>
-            </View>
+            <GestureHandlerRootView style={{ flex: 1 }}>
+                <BottomSheetModalProvider>
+                    <ConnectionCTX value={{ connection: connection, setConnection: setConnection }}>
+                        <SummariesCTX value={{ summaries: summaries, setSummaries: setSummaries }}>
+                            <ReadingCTX value={{ reading: reading, setReading: setReading }}>
+                                <DownloadProgressCTX
+                                    value={{
+                                        downloadProgress: downloadProgress,
+                                        setDownloadProgress: setDownloadProgress,
+                                    }}>
+                                    <View style={{ "--rem": baseRem } as any} className="flex-1">
+                                        <Stack
+                                            screenOptions={{
+                                                animation: "slide_from_right",
+                                                animationDuration: 100,
+                                            }}>
+                                            <Stack.Screen
+                                                name="index"
+                                                options={{ headerShown: false }}
+                                            />
+                                            <Stack.Screen
+                                                name="ApiTest"
+                                                options={{ headerShown: false }}
+                                            />
+                                            <Stack.Screen
+                                                name="(tabs)"
+                                                options={{ headerShown: false }}
+                                            />
+                                            <Stack.Screen
+                                                name="onboarding"
+                                                options={{ headerShown: false }}
+                                            />
+                                            <Stack.Screen
+                                                name="(details)"
+                                                options={{ headerShown: false }}
+                                            />
+                                        </Stack>
+                                        <ToastStack />
+                                    </View>
+                                </DownloadProgressCTX>
+                            </ReadingCTX>
+                        </SummariesCTX>
+                    </ConnectionCTX>
+                </BottomSheetModalProvider>
+            </GestureHandlerRootView>
         </SafeAreaProvider>
     );
 }

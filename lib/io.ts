@@ -7,6 +7,15 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 let socket: Socket | undefined = undefined;
 let isDownloading = false;
+let shouldContinue = true;
+
+export function getShouldContinue() {
+    return shouldContinue;
+}
+
+export function setShouldContinue(input: boolean) {
+    shouldContinue = input;
+}
 
 /**
  * @description Get downloading status
@@ -31,11 +40,11 @@ export function isConnected(): boolean {
 }
 
 function handleLostConnection(disconnectHandler: () => void) {
+    disconnectHandler();
+    setIsDownloading(false);
     if (!socket!.active) {
         socket!.disconnect();
-        setIsDownloading(false);
         socket = undefined;
-        disconnectHandler();
     }
 }
 
@@ -57,8 +66,9 @@ export function connectAndListen(
     readingsHandler: (readings: iReadings) => void,
     IOErrorHandler: (err: Error) => void = errorHandler
 ) {
-    console.log("Connecting!");
-
+    if (socket !== null) {
+        disconnect();
+    }
     socket = io(`${BACKEND_API_BASE_URL}/io/${BACKEND_API_IO_VERSION}`);
     socket!.on("connect", () => {
         connectHandler();
@@ -67,6 +77,9 @@ export function connectAndListen(
         handleLostConnection(disconnectHandler);
     });
     socket!.on("connect_error", () => {
+        handleLostConnection(disconnectHandler);
+    });
+    socket!.io.on("reconnect_failed", () => {
         handleLostConnection(disconnectHandler);
     });
     socket!.on("error", (err: Error) => {
@@ -102,13 +115,20 @@ export function _startDownload(
             await resetDownloadState();
         }
     });
-    socket!.on("download-data", (readings: iReadings[], downloadId: string, ack: () => void) => {
-        if (downloadId !== downloadRequest.downloadId) {
-            return;
+    socket!.on(
+        "download-data",
+        (readings: iReadings[], downloadId: string, ack: (arg: any) => void) => {
+            if (downloadId !== downloadRequest.downloadId) {
+                return;
+            }
+            if (getShouldContinue()) {
+                downloadHandler(readings, downloadId);
+                ack(true);
+            } else {
+                ack(false);
+            }
         }
-        downloadHandler(readings, downloadId);
-        ack();
-    });
+    );
     socket.on("download-finish", (downloadId) => {
         if (downloadId !== downloadRequest.downloadId) {
             return;
@@ -119,13 +139,14 @@ export function _startDownload(
 }
 
 /**
- * @description Disconnect socket.io from server
+ * @description Disconnect socket.io from server (This also clear all EventListener)
  * @returns {undefined | Error} Error if is not connected from beginning
  */
 export function disconnect(): undefined | Error {
     if (socket === undefined) {
         return new IOError(IOErrorEnum.NotConnected);
     }
+    socket!.off();
     socket!.disconnect();
     socket = undefined;
 }

@@ -1,81 +1,150 @@
-import { Typography } from "@/src/components/Typography";
-import React from "react";
+import React, { useContext, useEffect } from "react";
 import { View, ScrollView, useWindowDimensions } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import StatusCard from "./components/StatusCard";
 import PumpingStatusCard from "../../../components/PumpingStatusCard";
 import WaterRemainingCard from "./components/WaterRemainingCard";
-import FilterStatusCard from "./components/FilterStatusCard";
 import QualityCard from "../../../components/QualityCard";
 import PumpDurationChart from "./components/PumpDurationChart";
+import { fetchData } from "@/lib/rest";
+import NetInfo from "@react-native-community/netinfo";
+import { percentToLevel } from "@/lib/chemFormula";
+import { ReadingCTX } from "@/lib/contexts/readingCTX";
+import { SummariesCTX } from "@/lib/contexts/summariesCTX";
+import { RefreshableScreen } from "@/src/components/RefreshableScreen";
+import { connectAndListen } from "@/lib/io";
+import { ConnectionCTX } from "@/lib/contexts/connectionCTX";
+import type { iReadings } from "@/schemas/readings";
+import { IOT_INTERVAL_MS, ON_OFF_THRESHOLD_MS } from "@/lib/constants";
+import { globals } from "@/lib/globals";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import PageTitle from "@/src/components/PageTitle";
+import { toastInfo, toastWarning } from "@/src/components/ToastStack";
+import { enableNotification, getIsNotificationEnabled } from "@/lib/notifications";
+import { errorHandler } from "@/lib/errorHandler";
 
-const MOCK_WEEKLY_DATA = [
-    { day: "Sen", hours: 2 },
-    { day: "Sel", hours: 3 }, // (Anggap max 4)
-    { day: "Rab", hours: 2 },
-    { day: "Kam", hours: 1 },
-    { day: "Jum", hours: 2 },
-    { day: "Sab", hours: 3 },
-    { day: "Min", hours: 4 },
-];
+let timeout: null | number = null;
+
+let getConnection: () => boolean;
 
 const Home = () => {
     const { height } = useWindowDimensions();
-    const navbarPadding = height * 0.1; // 10% dari tinggi layar, lebih responsif
-    const totalHours = 4; // (Nanti ini juga dari API)
-    const currentDate = "Minggu, 24 November 2025"; // (Nanti ini formatTimestamp)
+    const navbarPadding = height * 0.1;
+
+    const { reading, setReading } = useContext(ReadingCTX)!;
+    const { summaries, setSummaries } = useContext(SummariesCTX)!;
+    const { connection, setConnection } = useContext(ConnectionCTX)!;
+
+    getConnection = () => {
+        return connection;
+    };
+
+    useEffect(() => {
+        getIsNotificationEnabled().then((val) => {
+            if (val) {
+                enableNotification().then((err) => {
+                    if (err instanceof Error) {
+                        errorHandler(err);
+                    }
+                });
+            }
+        });
+
+        function nowConnectAndListen() {
+            connectAndListen(
+                () => {
+                    fetchData(setReading, setSummaries);
+                    setConnection(true);
+                    if (getConnection() === false) {
+                        toastInfo({ message: "Connected!" });
+                    }
+                    timeout = setTimeout(async () => {
+                        await fetchData(setReading, null);
+                    }, ON_OFF_THRESHOLD_MS);
+                },
+                () => {
+                    if (getConnection() === true) {
+                        toastWarning({ message: "Disconnected!" });
+                    }
+                    setConnection(false);
+                },
+                (readings: iReadings) => {
+                    if (timeout !== null) {
+                        clearTimeout(timeout);
+                    }
+                    setReading(readings);
+
+                    globals.GSummaries![0]!.uptime += IOT_INTERVAL_MS / 1000;
+                    setSummaries([...globals.GSummaries!]); // Must be expanded to avoid memoization
+                    AsyncStorage.setItem("summaries", JSON.stringify(globals.GSummaries));
+
+                    timeout = setTimeout(async () => {
+                        await fetchData(setReading, null);
+                    }, ON_OFF_THRESHOLD_MS);
+                }
+            );
+        }
+
+        fetchData(setReading, setSummaries);
+        NetInfo.addEventListener((state) => {
+            if (state.isInternetReachable === true) {
+                if (!connection) {
+                    nowConnectAndListen();
+                }
+            }
+        });
+        nowConnectAndListen();
+    }, []);
 
     return (
-        <View className="flex-1 bg-white">
-            <LinearGradient
-                colors={["#E0EEE6", "#FFFFFF"]}
-                style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: "25%",
-                    width: "100%",
-                }}
-            />
-            <ScrollView
-                className="flex-1 pt-[5%] px-[8%]"
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: navbarPadding }} // Responsif berdasarkan tinggi layar
-            >
-                <Typography variant="h3" weight="semibold">
-                    Hydroconnect
-                </Typography>
-                <View className="my-[15%]">
-                    <StatusCard status="dirty" />
-                </View>
-                <View className="mb-[5%]">
-                    <PumpingStatusCard
-                        status="idle"
-                        lastPumpTime="10:00"
-                        lastPumpDate="Sabtu, 31 Oktober 2025"
-                    />
-                </View>
-                <View className="flex-row gap-[8%] mt-[3%]">
-                    <View className="flex-1">
-                        <WaterRemainingCard status="empty" />
+        <RefreshableScreen>
+            <View className="flex-1 bg-white">
+                <LinearGradient
+                    colors={["#E0EEE6", "#FFFFFF"]}
+                    style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: "25%",
+                        width: "100%",
+                    }}
+                />
+                <ScrollView
+                    className="flex-1 pt-[5%] px-[8%]"
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={{ paddingBottom: navbarPadding }} // Responsif berdasarkan tinggi layar
+                >
+                    <PageTitle title="Hydroconnect" />
+                    <View className="my-[15%]">
+                        <StatusCard reading={reading} />
                     </View>
-                    <View className="flex-1">
-                        <FilterStatusCard status="empty" />
+                    <View className="mb-[5%]">
+                        <PumpingStatusCard reading={reading} />
                     </View>
-                </View>
-                <View className="mt-[8%]">
-                    <QualityCard label="Kualitas Air" level={5} isButton />
-                </View>
-                <View className="mt-[14%]">
-                    <PumpDurationChart
-                        weeklyData={MOCK_WEEKLY_DATA}
-                        totalHours={totalHours}
-                        currentDate={currentDate}
-                    />
-                </View>
-            </ScrollView>
-        </View>
+                    <View className="flex-row gap-[8%] mt-[3%]">
+                        <View className="flex-1">
+                            <WaterRemainingCard
+                                control={reading === null ? null : reading.control}
+                            />
+                        </View>
+                    </View>
+                    <View className="mt-[8%]">
+                        <QualityCard
+                            label="Kualitas Air"
+                            level={reading === null ? null : percentToLevel(reading.percent)}
+                            isButton
+                            description="Ringkasan kualitas air untuk menjamin air aman digunakan untuk kegiatan sehari-hari"
+                        />
+                    </View>
+                    <View className="mt-[14%]">
+                        <PumpDurationChart summaries={summaries} />
+                    </View>
+
+                    <View className="mt-[14%]"></View>
+                </ScrollView>
+            </View>
+        </RefreshableScreen>
     );
 };
 
